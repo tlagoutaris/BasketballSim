@@ -11,4 +11,15 @@ public class BoundedNormalDistribution {
 
         return x;
     }
+
+    public static int generateBoundedNormal(int mean, int stdDev, int min, int max) {
+        SecureRandom r = new SecureRandom();
+        int x;
+        do {
+            int standardNormal = (int) r.nextGaussian();
+            x = mean + standardNormal * stdDev;
+        } while (x <= min || x >= max);
+
+        return x;
+    }
 }

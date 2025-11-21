@@ -1,10 +1,17 @@
+import java.security.SecureRandom;
+
 public class Team {
+    SecureRandom r = new SecureRandom();
+
     String city;
     String team;
     int score;
     double twoPointPercentage;
     double threePointPercentage;
     double twoPointTendency;
+
+    // Players
+    Player[] roster = new Player[5];
 
     // Totals
     int gamesPlayed;
@@ -25,7 +32,7 @@ public class Team {
     double attemptsPerGame;
     double makesPerGame;
 
-    public Team(String city, String team, double twoPointPercentage, double threePointPercentage, double twoPointTendency) {
+    public Team(String city, String team) {
         this.city = city;
         this.team = team;
         this.twoPointPercentage = twoPointPercentage;
@@ -41,6 +48,35 @@ public class Team {
 
         wins = 0;
         losses = 0;
+
+        generateTeam();
+    }
+
+    void simulateShot(Team opponent) {
+        Player shooter = this.roster[r.nextInt(0, this.roster.length)];
+        Player defender = opponent.roster[r.nextInt(0, opponent.roster.length)];
+
+        String[] result = shooter.shoot(defender);
+
+        String shotType = result[0];
+        String outcome = result[1];
+        int points = Integer.parseInt(result[2]);
+
+        this.score += points;
+
+        if (shotType.equals("2PT")) {
+            this.setTwoPointAttemptsTotal(this.getTwoPointAttemptsTotal() + 1);
+            if (outcome.equals("Success")) {
+                this.setTwoPointMakesTotal(this.getTwoPointMakesTotal() + 1);
+            }
+        }
+
+        else {
+            this.setThreePointAttemptsTotal(this.getThreePointAttemptsTotal() + 1);
+            if (outcome.equals("Success")) {
+                this.setThreePointMakesTotal(this.getThreePointMakesTotal() + 1);
+            }
+        }
     }
 
     public int getScore() {
@@ -122,5 +158,11 @@ public class Team {
                 wins,
                 losses
         );
+    }
+
+    void generateTeam() {
+        for (int i = 0; i < this.roster.length; i++) {
+            this.roster[i] = new Player();
+        }
     }
 }

@@ -20,35 +20,14 @@ public class Game {
         this.awayTeam = awayTeam;
     }
 
-    void simulateShot(Team team) {
-        double shotType = r.nextDouble(0, 1.01);
-        double shotSuccess = r.nextDouble(0, 1.01);
-
-        if (shotType <= team.twoPointTendency) {
-            // 2PT
-            team.setTwoPointAttemptsTotal(team.getTwoPointAttemptsTotal() + 1);
-            if (shotSuccess < team.twoPointPercentage) {
-                team.setTwoPointMakesTotal(team.getTwoPointMakesTotal() + 1);
-                team.setScore(team.getScore() + 2);
-            }
-        } else {
-            // 3PT
-            team.setThreePointAttemptsTotal(team.getThreePointAttemptsTotal() + 1);
-            if (shotSuccess < team.threePointPercentage) {
-                team.setThreePointMakesTotal(team.getThreePointMakesTotal() + 1);
-                team.setScore(team.getScore() + 3);
-            }
-        }
-    }
-
     void simulatePossession() {
         switch (possession) {
             case 'H':
-                simulateShot(homeTeam);
+                homeTeam.simulateShot(awayTeam);
                 possession = 'A';
                 break;
             case 'A':
-                simulateShot(awayTeam);
+                awayTeam.simulateShot(homeTeam);
                 possession = 'H';
                 break;
         }
@@ -115,7 +94,7 @@ public class Game {
         }
 
         homeTeam.setGamesPlayed(homeTeam.getGamesPlayed() + 1);
-        awayTeam.setGamesPlayed(homeTeam.getGamesPlayed() + 1);
+        awayTeam.setGamesPlayed(awayTeam.getGamesPlayed() + 1);
     }
 
     void reset() {
