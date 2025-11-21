@@ -5,13 +5,14 @@ public class Game {
 
     // CONSTANTS
     final double NUM_MINUTES_PER_PERIOD = 12;
+    final double NUM_MINUTES_PER_OVERTIME_PERIOD = 5;
     final int NUM_PERIODS = 4;
 
     double currentPeriodTimeLeft;
     Team homeTeam;
     Team awayTeam;
     double possessionLength;
-    char possession = 'A'; // A is team A, B is team B
+    char possession = 'H'; // H is home team, A is away team
     int overtimes = 0;
 
     public Game(Team homeTeam, Team awayTeam) {
@@ -19,56 +20,64 @@ public class Game {
         this.awayTeam = awayTeam;
     }
 
-    void regulationSimulation() {
+    void simulateShot(Team team) {
+        double shotType = r.nextDouble(0, 1.01);
+        double shotSuccess = r.nextDouble(0, 1.01);
 
-        determinePossession();
-        for (int i = 0; i < NUM_PERIODS; i++) {
-            currentPeriodTimeLeft = NUM_MINUTES_PER_PERIOD * 60;
-
-            if (i == 2) determinePossession();
-            while (currentPeriodTimeLeft > 0) {
-                possessionLength = Math.round(r.nextDouble(0, 24.1) * 10.0) / 10.0; // rounded to 1 decimal point
-                currentPeriodTimeLeft -= possessionLength;
-
-                double fieldGoalPercentageRange = r.nextDouble(0, 1.01);
-                switch (possession) {
-                    case 'A':
-                        if (fieldGoalPercentageRange > 0 && fieldGoalPercentageRange < 0.50) homeTeam.setScore(homeTeam.getScore() + 2);
-                        possession = 'B';
-                        break;
-                    case 'B':
-                        if (fieldGoalPercentageRange > 0 && fieldGoalPercentageRange < 0.50) awayTeam.setScore(awayTeam.getScore() + 2);
-                        possession = 'A';
-                        break;
-                }
+        if (shotType <= team.twoPointTendency) {
+            // 2PT
+            team.setTwoPointAttemptsTotal(team.getTwoPointAttemptsTotal() + 1);
+            if (shotSuccess < team.twoPointPercentage) {
+                team.setTwoPointMakesTotal(team.getTwoPointMakesTotal() + 1);
+                team.setScore(team.getScore() + 2);
+            }
+        } else {
+            // 3PT
+            team.setThreePointAttemptsTotal(team.getThreePointAttemptsTotal() + 1);
+            if (shotSuccess < team.threePointPercentage) {
+                team.setThreePointMakesTotal(team.getThreePointMakesTotal() + 1);
+                team.setScore(team.getScore() + 3);
             }
         }
     }
 
-    void overtimeSimulation() {
-        while (homeTeam.getScore() == awayTeam.getScore()) {
-            overtimes++;
-            currentPeriodTimeLeft = (NUM_MINUTES_PER_PERIOD - 7) * 60;
-
-            determinePossession();
-            while (currentPeriodTimeLeft > 0) {
-
-                possessionLength = Math.round(r.nextDouble(0, 24.1) * 10.0) / 10.0; // rounded to 1 decimal point
-                currentPeriodTimeLeft -= possessionLength;
-
-                double fieldGoalPercentage = r.nextDouble(0, 1.01);
-                switch (possession) {
-                    case 'A':
-                        if (fieldGoalPercentage > 0 && fieldGoalPercentage < 0.50) homeTeam.setScore(homeTeam.getScore() + 2);
-                        possession = 'B';
-                        break;
-                    case 'B':
-                        if (fieldGoalPercentage > 0 && fieldGoalPercentage < 0.50) awayTeam.setScore(awayTeam.getScore() + 2);
-                        possession = 'A';
-                        break;
-                }
-            }
+    void simulatePossession() {
+        switch (possession) {
+            case 'H':
+                simulateShot(homeTeam);
+                possession = 'A';
+                break;
+            case 'A':
+                simulateShot(awayTeam);
+                possession = 'H';
+                break;
         }
+    }
+
+    void simulatePeriod(double minutes, boolean isOvertime) {
+        currentPeriodTimeLeft = minutes * 60;
+
+        while (currentPeriodTimeLeft > 0) {
+            possessionLength = Math.round(r.nextDouble(0, 24.1) * 10.0) / 10.0; // rounded to 1 decimal point
+            currentPeriodTimeLeft -= possessionLength;
+            simulatePossession();
+        }
+
+        if (isOvertime) {
+            overtimes++;
+        }
+    }
+
+    void regulationSimulation() {
+        determinePossession();
+        for (int period = 0; period < NUM_PERIODS; period++) {
+            simulatePeriod(NUM_MINUTES_PER_PERIOD, false);
+        }
+    }
+
+    void overtimeSimulation() {
+        determinePossession();
+        simulatePeriod(NUM_MINUTES_PER_OVERTIME_PERIOD, true);
     }
 
     void printScore() {
@@ -84,33 +93,34 @@ public class Game {
     void determinePossession() {
         int coin = r.nextInt(0, 2);
         if (coin == 0) {
-            possession = 'A';
+            possession = 'H';
         } else {
-            possession = 'B';
+            possession = 'A';
         }
     }
 
     void fullGameSimulation() {
         regulationSimulation();
-        overtimeSimulation();
+        while (homeTeam.getScore() == awayTeam.getScore()) {
+            overtimeSimulation();
+        }
+        homeTeam.setPointsTotal(homeTeam.getPointsTotal() + homeTeam.getScore());
+        awayTeam.setPointsTotal(awayTeam.getPointsTotal() + awayTeam.getScore());
+        if (homeTeam.getScore() > awayTeam.getScore()) {
+            homeTeam.wins++;
+            awayTeam.losses++;
+        } else {
+            homeTeam.losses++;
+            awayTeam.wins++;
+        }
+
+        homeTeam.gamesPlayed++;
+        awayTeam.gamesPlayed++;
     }
 
     void reset() {
         homeTeam.setScore(0);
         awayTeam.setScore(0);
         overtimes = 0;
-    }
-
-    // Getters
-    public int getTeamAScore() {
-        return homeTeam.getScore();
-    }
-
-    public int getTeamBScore() {
-        return awayTeam.getScore();
-    }
-
-    public int getOvertimes() {
-        return overtimes;
     }
 }
