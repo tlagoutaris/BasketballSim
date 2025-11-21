@@ -114,8 +114,8 @@ public class Game {
             awayTeam.wins++;
         }
 
-        homeTeam.gamesPlayed++;
-        awayTeam.gamesPlayed++;
+        homeTeam.setGamesPlayed(homeTeam.getGamesPlayed() + 1);
+        awayTeam.setGamesPlayed(homeTeam.getGamesPlayed() + 1);
     }
 
     void reset() {
