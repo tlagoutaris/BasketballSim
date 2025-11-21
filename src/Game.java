@@ -58,7 +58,7 @@ public class Game {
         currentPeriodTimeLeft = minutes * 60;
 
         while (currentPeriodTimeLeft > 0) {
-            possessionLength = Math.round(r.nextDouble(0, 24.1) * 10.0) / 10.0; // rounded to 1 decimal point
+            possessionLength = BoundedNormalDistribution.generateBoundedNormal(14.4, 5, 0, 24);
             currentPeriodTimeLeft -= possessionLength;
             simulatePossession();
         }
