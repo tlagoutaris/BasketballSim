@@ -165,4 +165,13 @@ public class Team {
             this.roster[i] = new Player();
         }
     }
+
+    void printRoster() {
+        System.out.printf("%s %s Roster: %n", this.city, this.team);
+
+        for (Player p : roster) {
+            System.out.print(p.getFullName());
+            System.out.println(p.getStats());
+        }
+    }
 }

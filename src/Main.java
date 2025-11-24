@@ -5,6 +5,7 @@ public class Main {
         Team t1 = new Team("Boston", "Celtics");
         Team t2 = new Team("Brooklyn", "Nets");
 
+        /*
         Game g = new Game(t1, t2);
         for (int i = 0; i < 100; i++) {
             g.fullGameSimulation();
@@ -17,5 +18,10 @@ public class Main {
 
         t1.calculateAverages();
         t2.calculateAverages();
+
+         */
+
+        t1.printRoster();
+        t2.printRoster();
     }
 }

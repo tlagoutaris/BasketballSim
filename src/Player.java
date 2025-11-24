@@ -26,6 +26,8 @@ public class Player {
 
     public Player() {
         generateStats();
+        firstName = RandomName.generateRandomFirstName();
+        lastName = RandomName.generateRandomLastName();
         this.gamesPlayed = 0;
         this.pointsTotal = 0;
         this.twoPointAttemptsTotal = 0;
@@ -139,5 +141,13 @@ public class Player {
 
     void setThreePointMakesTotal(int threePointMakesTotal) {
         this.threePointMakesTotal = threePointMakesTotal;
+    }
+
+    String getFullName() {
+        return this.firstName + " " + this.lastName;
+    }
+
+    String getStats() {
+        return "\n2PT Offense: " + this.twoPointOffense + "\n" + "3PT Offense: " + this.threePointDefense + "\n2PT Defense: " + this.twoPointDefense + "\n3PT Defense: " + this.threePointDefense + "\n";
     }
 }
