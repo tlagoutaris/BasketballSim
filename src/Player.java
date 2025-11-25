@@ -65,7 +65,7 @@ public class Player {
 
             // Calculate user's offense against opponent's defense
             int attributeDifference = defender.twoPointDefense - this.twoPointOffense;
-            double successThreshold = BoundedNormalDistribution.generateBoundedNormal(54 + (attributeDifference * 0.5), 10, 0, 100);
+            double successThreshold = BoundedNormalDistribution.generateBoundedNormalDoubleInt(54 + (attributeDifference * 0.5), 10, 0, 100);
 
             if (shotSuccessChance <= successThreshold) {
                 this.setTwoPointMakesTotal(this.getTwoPointMakesTotal() + 1);
@@ -81,7 +81,7 @@ public class Player {
             this.setThreePointAttemptsTotal(this.getThreePointAttemptsTotal() + 1);
 
             int attributeDifference = defender.threePointDefense - this.threePointOffense;
-            double successThreshold = BoundedNormalDistribution.generateBoundedNormal(36 + (attributeDifference * 0.5), 10, 0, 100);
+            double successThreshold = BoundedNormalDistribution.generateBoundedNormalDoubleInt(36 + (attributeDifference * 0.5), 10, 0, 100);
 
             if (shotSuccessChance <= successThreshold) {
                 this.setThreePointMakesTotal(this.getThreePointMakesTotal() + 1);
@@ -108,7 +108,7 @@ public class Player {
         if (stealAttemptChance <= this.stealAttemptTendency) {
             // you attempt the steal
             int attributeDifference = playerWithBall.ballControl - this.steal;
-            double successThreshold = BoundedNormalDistribution.generateBoundedNormal(40 + (attributeDifference * 0.5), 10, 0, 100);
+            double successThreshold = BoundedNormalDistribution.generateBoundedNormalDoubleInt(40 + (attributeDifference * 0.5), 10, 0, 100);
 
             if (stealSuccessChance <= successThreshold) {
                 // if steal happens
@@ -127,17 +127,17 @@ public class Player {
 
     void generateAttributes() {
         // Attributes
-        this.twoPointOffense = BoundedNormalDistribution.generateBoundedNormal(50, 10, 0, 100);
-        this.twoPointDefense = BoundedNormalDistribution.generateBoundedNormal(50, 10, 0, 100);
-        this.threePointOffense = BoundedNormalDistribution.generateBoundedNormal(50, 10, 0, 100);
-        this.threePointDefense = BoundedNormalDistribution.generateBoundedNormal(50, 10, 0, 100);
-        this.ballControl = BoundedNormalDistribution.generateBoundedNormal(50, 10, 0, 100);
-        this.steal = BoundedNormalDistribution.generateBoundedNormal(50, 10, 0, 100);
+        this.twoPointOffense = Math.round(BoundedNormalDistribution.generateBoundedNormalDoubleInt(50, 10, 0, 100));
+        this.twoPointDefense = Math.round(BoundedNormalDistribution.generateBoundedNormalDoubleInt(50, 10, 0, 100));
+        this.threePointOffense = BoundedNormalDistribution.generateBoundedNormalDoubleInt(50, 10, 0, 100);
+        this.threePointDefense = BoundedNormalDistribution.generateBoundedNormalDoubleInt(50, 10, 0, 100);
+        this.ballControl = BoundedNormalDistribution.generateBoundedNormalDoubleInt(50, 10, 0, 100);
+        this.steal = BoundedNormalDistribution.generateBoundedNormalDoubleInt(50, 10, 0, 100);
 
         // Tendencies
-        this.twoPointTendency = BoundedNormalDistribution.generateBoundedNormal(60, 10, 0, 100);
+        this.twoPointTendency = BoundedNormalDistribution.generateBoundedNormalDoubleInt(60, 10, 0, 100);
         this.threePointTendency = 1 - this.twoPointTendency;
-        this.stealAttemptTendency = BoundedNormalDistribution.generateBoundedNormal(18, 8, 0, 100);
+        this.stealAttemptTendency = BoundedNormalDistribution.generateBoundedNormalDoubleInt(18, 8, 0, 100);
     }
 
     // Getters & Setters
