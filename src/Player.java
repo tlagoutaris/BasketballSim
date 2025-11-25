@@ -80,7 +80,7 @@ public class Player {
             shotType = "3PT";
             this.setThreePointAttemptsTotal(this.getThreePointAttemptsTotal() + 1);
 
-            int attributeDifference = defender.threePointDefense - this.threePointDefense;
+            int attributeDifference = defender.threePointDefense - this.threePointOffense;
             double successThreshold = BoundedNormalDistribution.generateBoundedNormal(36 + (attributeDifference * 0.5), 10, 0, 100);
 
             if (shotSuccessChance <= successThreshold) {
@@ -211,7 +211,7 @@ public class Player {
 
     String getStats() {
         return "\n2PT Offense: " + this.twoPointOffense +
-                "\n" + "3PT Offense: " + this.threePointDefense +
+                "\n" + "3PT Offense: " + this.threePointOffense +
                 "\n" + "Ball Control: " + this.ballControl +
                 "\n2PT Defense: " + this.twoPointDefense +
                 "\n3PT Defense: " + this.threePointDefense +

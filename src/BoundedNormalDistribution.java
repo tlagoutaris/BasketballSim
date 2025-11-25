@@ -1,7 +1,7 @@
 import java.security.SecureRandom;
 
 public class BoundedNormalDistribution {
-    public static double generateBoundedNormal(double mean, double stdDev, double min, double max) {
+    public static double generateBoundedNormal(double mean, double stdDev, int min, int max) {
         SecureRandom r = new SecureRandom();
         double x;
         do {
