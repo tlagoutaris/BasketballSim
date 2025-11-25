@@ -20,6 +20,9 @@ public class Team {
     int threePointAttemptsTotal;
     int twoPointMakesTotal;
     int threePointMakesTotal;
+    int turnoversTotal;
+    int stealsTotal;
+
     int wins;
     int losses;
 
@@ -31,13 +34,20 @@ public class Team {
     double threePointMakesPerGame;
     double attemptsPerGame;
     double makesPerGame;
+    double turnoversPerGame;
+    double stealsPerGame;
 
     public Team(String city, String team) {
+        // Team information
         this.city = city;
         this.team = team;
+
+        // Tendencies (unused)
         this.twoPointPercentage = twoPointPercentage;
         this.threePointPercentage = threePointPercentage;
         this.twoPointTendency = twoPointTendency;
+
+        // Statistic Totals
         score = 0;
         gamesPlayed = 0;
         pointsTotal = 0;
@@ -45,6 +55,8 @@ public class Team {
         threePointAttemptsTotal = 0;
         twoPointMakesTotal = 0;
         threePointMakesTotal = 0;
+        stealsTotal = 0;
+        turnoversTotal = 0;
 
         wins = 0;
         losses = 0;
@@ -55,6 +67,12 @@ public class Team {
     void simulateShot(Team opponent) {
         Player shooter = this.roster[r.nextInt(0, this.roster.length)];
         Player defender = opponent.roster[r.nextInt(0, opponent.roster.length)];
+
+        if (defender.attemptSteal(shooter).equals("Steal")) {
+            this.setTurnoversTotal(this.getTurnoversTotal() + 1);
+            opponent.setStealsTotal(opponent.getStealsTotal() + 1);
+            return; // ends possession before the shot attempt
+        }
 
         String[] result = shooter.shoot(defender);
 
@@ -115,6 +133,14 @@ public class Team {
         return this.threePointMakesTotal;
     }
 
+    public int getTurnoversTotal() {
+        return this.turnoversTotal;
+    }
+
+    public int getStealsTotal() {
+        return this.stealsTotal;
+    }
+
     public void setGamesPlayed(int gamesPlayed) {
         this.gamesPlayed = gamesPlayed;
     }
@@ -139,6 +165,14 @@ public class Team {
         this.threePointMakesTotal = threePointMakesTotal;
     }
 
+    public void setTurnoversTotal(int turnoversTotal) {
+        this.turnoversTotal = turnoversTotal;
+    }
+
+    public void setStealsTotal(int stealsTotal) {
+        this.stealsTotal = stealsTotal;
+    }
+
     public void calculateAverages() {
         System.out.println("\n" + getFullName() + " statistics: ");
 
@@ -149,10 +183,14 @@ public class Team {
         this.threePointMakesPerGame = (double) threePointMakesTotal / gamesPlayed;
         this.attemptsPerGame = twoPointAttemptsPerGame + threePointAttemptsPerGame;
         this.makesPerGame = twoPointMakesPerGame + threePointMakesPerGame;
+        this.turnoversPerGame = (double) this.turnoversTotal / gamesPlayed;
+        this.stealsPerGame = (double) this.stealsTotal / gamesPlayed;
 
         System.out.printf(
-                "\nPPG: %.2f\nFG%%: %.2f\n3P%%: %.2f\nWins: %d\nLosses: %d",
+                "\nPTS/g: %.2f\nTOV/g: %.2f\nSTL/g: %.2f\nFG%%: %.2f\n3P%%: %.2f\nWins: %d\nLosses: %d\n",
                 pointsPerGame,
+                turnoversPerGame,
+                stealsPerGame,
                 (makesPerGame / attemptsPerGame) * 100,
                 (threePointMakesPerGame / threePointAttemptsPerGame) * 100,
                 wins,
@@ -167,7 +205,7 @@ public class Team {
     }
 
     void printRoster() {
-        System.out.printf("%s %s Roster: %n", this.city, this.team);
+        System.out.printf("\n%s %s Roster: %n", this.city, this.team);
 
         for (Player p : roster) {
             System.out.print(p.getFullName());
