@@ -7,9 +7,12 @@ public class Player {
     String firstName;
     String lastName;
 
+    Team currentTeam; // make use of this later
+
     // Attributes
     int twoPointOffense;
     int threePointOffense;
+    int freeThrow;
     int twoPointDefense;
     int threePointDefense;
     int ballControl;
@@ -19,34 +22,32 @@ public class Player {
     double twoPointTendency;
     double threePointTendency;
     double stealAttemptTendency;
+    double foulTendency;
 
     // Statistic totals
     int gamesPlayed;
     int pointsTotal;
     int twoPointAttemptsTotal;
     int threePointAttemptsTotal;
+    int freeThrowAttemptsTotal;
     int twoPointMakesTotal;
     int threePointMakesTotal;
+    int freeThrowMakesTotal;
     int turnoversTotal;
     int stealsTotal;
+    int foulsTotal;
 
-    public Player() {
+    public Player(Team currentTeam) {
+        this.currentTeam = currentTeam;
+
         // Personal information
         firstName = RandomName.generateRandomFirstName();
         lastName = RandomName.generateRandomLastName();
 
         // Attributes
         generateAttributes();
-
         // Statistic totals
-        this.gamesPlayed = 0;
-        this.pointsTotal = 0;
-        this.twoPointAttemptsTotal = 0;
-        this.threePointAttemptsTotal = 0;
-        this.twoPointMakesTotal = 0;
-        this.threePointMakesTotal = 0;
-        this.turnoversTotal = 0;
-        this.stealsTotal = 0;
+        initializeStatistics();
     }
 
     String[] shoot(Player defender) {
@@ -56,6 +57,7 @@ public class Player {
 
         double shotTypeChance = r.nextDouble(0, 100.0);
         double shotSuccessChance = r.nextDouble(0, 100.0);
+        double foulChance = r.nextDouble(0, 100.0);
 
         if (shotTypeChance <= this.twoPointTendency) {
 
@@ -70,9 +72,25 @@ public class Player {
             if (shotSuccessChance <= successThreshold) {
                 this.setTwoPointMakesTotal(this.getTwoPointMakesTotal() + 1);
                 points = 2;
+
+                // Check for foul
+                if (foulChance <= defender.foulTendency) {
+                    // Made and-1 2pt shot
+                    points += this.shootFreeThrows(1);
+                }
+
                 outcome = "Success";
             } else {
-                outcome = "Fail";
+
+                outcome = "Fail"; // fail before foul check because if you miss and get fouled, no shot attempt
+
+                // Check for foul
+                if (foulChance <= defender.foulTendency) {
+                    // Missed 2pt shot but got fouled
+                    this.setTwoPointAttemptsTotal(this.getTwoPointAttemptsTotal() - 1);
+                    points += this.shootFreeThrows(2);
+                    outcome = "Fouled";
+                }
             }
 
         } else {
@@ -86,9 +104,26 @@ public class Player {
             if (shotSuccessChance <= successThreshold) {
                 this.setThreePointMakesTotal(this.getThreePointMakesTotal() + 1);
                 points = 3;
+
+                // Check for foul
+                if (foulChance <= defender.foulTendency) {
+                    // Made and-1 3pt shot
+                    points += this.shootFreeThrows(1);
+                }
+
+                // Check for foul
                 outcome = "Success";
             } else {
+
                 outcome = "Fail";
+
+                // Check for foul
+                if (foulChance <= defender.foulTendency) {
+                    // Missed 3pt shot but got fouled
+                    this.setThreePointAttemptsTotal(this.getThreePointAttemptsTotal() - 1);
+                    points += this.shootFreeThrows(3);
+                    outcome = "Fouled";
+                }
             }
 
         }
@@ -96,6 +131,26 @@ public class Player {
         this.setPointsTotal(this.getPointsTotal() + points);
 
         return new String[] {shotType, outcome, String.valueOf(points)};
+    }
+
+    int shootFreeThrows(int numFreeThrows) {
+        int points = 0;
+
+        for (int i = 0; i < numFreeThrows; i++) {
+
+            this.setFreeThrowAttemptsTotal(this.getThreePointAttemptsTotal() + 1);
+            this.currentTeam.setFreeThrowAttemptsTotal(this.currentTeam.getFreeThrowAttemptsTotal() + 1);
+
+            double freeThrowSuccessChance = r.nextDouble(0, 100.0);
+            if (freeThrowSuccessChance <= this.freeThrow) {
+                // Made free throw
+                this.setFreeThrowMakesTotal(this.getThreePointMakesTotal() + 1);
+                this.currentTeam.setFreeThrowMakesTotal(this.currentTeam.getFreeThrowMakesTotal() + 1);
+                points++;
+            }
+        }
+
+        return points;
     }
 
     String attemptSteal(Player playerWithBall) {
@@ -117,7 +172,14 @@ public class Player {
                 playerWithBall.setTurnoversTotal(playerWithBall.getTurnoversTotal() + 1);
 
             } else {
-                // For now, nothing happens (but this should branch out to <No steal> or <Foul>
+                // Foul tendency
+                double foulChance = BoundedNormalDistribution.generateBoundedNormalDoubleInt(40 + (attributeDifference * 0.5), 10,0, 100);
+                if (foulChance <= this.foulTendency) {
+                    outcome = "Foul";
+                    this.setFoulsTotal(this.getFoulsTotal() + 1);
+                }
+
+                // No steal
                 outcome = "No steal";
             }
         }
@@ -127,17 +189,33 @@ public class Player {
 
     void generateAttributes() {
         // Attributes
-        this.twoPointOffense = Math.round(BoundedNormalDistribution.generateBoundedNormalDoubleInt(50, 10, 0, 100));
-        this.twoPointDefense = Math.round(BoundedNormalDistribution.generateBoundedNormalDoubleInt(50, 10, 0, 100));
-        this.threePointOffense = BoundedNormalDistribution.generateBoundedNormalDoubleInt(50, 10, 0, 100);
-        this.threePointDefense = BoundedNormalDistribution.generateBoundedNormalDoubleInt(50, 10, 0, 100);
-        this.ballControl = BoundedNormalDistribution.generateBoundedNormalDoubleInt(50, 10, 0, 100);
-        this.steal = BoundedNormalDistribution.generateBoundedNormalDoubleInt(50, 10, 0, 100);
+        this.twoPointOffense = Math.round(BoundedNormalDistribution.generateBoundedNormalDoubleInt(50, 16, 0, 100));
+        this.twoPointDefense = Math.round(BoundedNormalDistribution.generateBoundedNormalDoubleInt(50, 16, 0, 100));
+        this.threePointOffense = BoundedNormalDistribution.generateBoundedNormalDoubleInt(50, 16, 0, 100);
+        this.threePointDefense = BoundedNormalDistribution.generateBoundedNormalDoubleInt(50, 16, 0, 100);
+        this.freeThrow = BoundedNormalDistribution.generateBoundedNormalDoubleInt(50, 16, 0, 100);
+        this.ballControl = BoundedNormalDistribution.generateBoundedNormalDoubleInt(50, 16, 0, 100);
+        this.steal = BoundedNormalDistribution.generateBoundedNormalDoubleInt(50, 16, 0, 100);
 
         // Tendencies
         this.twoPointTendency = BoundedNormalDistribution.generateBoundedNormalDoubleInt(60, 10, 0, 100);
         this.threePointTendency = 1 - this.twoPointTendency;
         this.stealAttemptTendency = BoundedNormalDistribution.generateBoundedNormalDoubleInt(18, 8, 0, 100);
+        this.foulTendency = BoundedNormalDistribution.generateBoundedNormalDoubleInt(18, 8, 0, 100);
+    }
+
+    void initializeStatistics() {
+        this.gamesPlayed = 0;
+        this.pointsTotal = 0;
+        this.twoPointAttemptsTotal = 0;
+        this.twoPointMakesTotal = 0;
+        this.threePointAttemptsTotal = 0;
+        this.threePointMakesTotal = 0;
+        this.freeThrowAttemptsTotal = 0;
+        this.freeThrowMakesTotal = 0;
+        this.turnoversTotal = 0;
+        this.stealsTotal = 0;
+        this.foulsTotal = 0;
     }
 
     // Getters & Setters
@@ -172,6 +250,17 @@ public class Player {
     int getStealsTotal() {
         return this.stealsTotal;
     }
+    int getFoulsTotal() {
+        return this.foulsTotal;
+    }
+
+    int getFreeThrowAttemptsTotal() {
+        return this.freeThrowAttemptsTotal;
+    }
+
+    int getFreeThrowMakesTotal() {
+        return this.freeThrowMakesTotal;
+    }
 
     void setGamesPlayed(int gamesPlayed) {
         this.gamesPlayed = gamesPlayed;
@@ -204,6 +293,17 @@ public class Player {
     void setStealsTotal(int stealsTotal) {
         this.stealsTotal = stealsTotal;
     }
+    void setFoulsTotal(int foulsTotal) {
+        this.foulsTotal = foulsTotal;
+    }
+
+    void setFreeThrowAttemptsTotal(int freeThrowAttemptsTotal) {
+        this.freeThrowAttemptsTotal = freeThrowAttemptsTotal;
+    }
+
+    void setFreeThrowMakesTotal(int freeThrowMakesTotal) {
+        this.freeThrowMakesTotal = freeThrowMakesTotal;
+    }
 
     String getFullName() {
         return this.firstName + " " + this.lastName;
@@ -211,8 +311,9 @@ public class Player {
 
     String getStats() {
         return "\n2PT Offense: " + this.twoPointOffense +
-                "\n" + "3PT Offense: " + this.threePointOffense +
-                "\n" + "Ball Control: " + this.ballControl +
+                "\n3PT Offense: " + this.threePointOffense +
+                "\nFree Throw: " + this.freeThrow +
+                "\nBall Control: " + this.ballControl +
                 "\n2PT Defense: " + this.twoPointDefense +
                 "\n3PT Defense: " + this.threePointDefense +
                 "\nSteal: " + this.steal

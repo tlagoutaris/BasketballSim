@@ -6,9 +6,6 @@ public class Team {
     String city;
     String team;
     int score;
-    double twoPointPercentage;
-    double threePointPercentage;
-    double twoPointTendency;
 
     // Players
     Player[] roster = new Player[5];
@@ -17,11 +14,14 @@ public class Team {
     int gamesPlayed;
     int pointsTotal;
     int twoPointAttemptsTotal;
-    int threePointAttemptsTotal;
     int twoPointMakesTotal;
+    int threePointAttemptsTotal;
     int threePointMakesTotal;
+    int freeThrowAttemptsTotal;
+    int freeThrowMakesTotal;
     int turnoversTotal;
     int stealsTotal;
+    int foulsTotal;
 
     int wins;
     int losses;
@@ -29,38 +29,24 @@ public class Team {
     // Averages
     double pointsPerGame;
     double twoPointAttemptsPerGame;
-    double threePointAttemptsPerGame;
     double twoPointMakesPerGame;
+    double threePointAttemptsPerGame;
     double threePointMakesPerGame;
+    double freeThrowAttemptsPerGame;
+    double freeThrowMakesPerGame;
     double attemptsPerGame;
     double makesPerGame;
     double turnoversPerGame;
     double stealsPerGame;
+    double foulsPerGame;
 
     public Team(String city, String team) {
         // Team information
         this.city = city;
         this.team = team;
 
-        // Tendencies (unused)
-        this.twoPointPercentage = twoPointPercentage;
-        this.threePointPercentage = threePointPercentage;
-        this.twoPointTendency = twoPointTendency;
-
         // Statistic Totals
-        score = 0;
-        gamesPlayed = 0;
-        pointsTotal = 0;
-        twoPointAttemptsTotal = 0;
-        threePointAttemptsTotal = 0;
-        twoPointMakesTotal = 0;
-        threePointMakesTotal = 0;
-        stealsTotal = 0;
-        turnoversTotal = 0;
-
-        wins = 0;
-        losses = 0;
-
+        initializeStatistics();
         generateTeam();
     }
 
@@ -87,12 +73,22 @@ public class Team {
             if (outcome.equals("Success")) {
                 this.setTwoPointMakesTotal(this.getTwoPointMakesTotal() + 1);
             }
+
+            else if (outcome.equals("Fouled")) {
+                this.setTwoPointAttemptsTotal(this.getTwoPointAttemptsTotal() - 1);
+                opponent.setFoulsTotal(opponent.getFoulsTotal() + 1);
+            }
         }
 
-        else {
+        else if (shotType.equals("3PT")) {
             this.setThreePointAttemptsTotal(this.getThreePointAttemptsTotal() + 1);
             if (outcome.equals("Success")) {
                 this.setThreePointMakesTotal(this.getThreePointMakesTotal() + 1);
+            }
+
+            else if (outcome.equals("Fouled")) {
+                this.setThreePointAttemptsTotal(this.getThreePointAttemptsTotal() - 1);
+                opponent.setFoulsTotal(opponent.getFoulsTotal() + 1);
             }
         }
     }
@@ -121,16 +117,24 @@ public class Team {
         return this.twoPointAttemptsTotal;
     }
 
-    public int getThreePointAttemptsTotal() {
-        return this.threePointAttemptsTotal;
-    }
-
     public int getTwoPointMakesTotal() {
         return this.twoPointMakesTotal;
     }
 
+    public int getThreePointAttemptsTotal() {
+        return this.threePointAttemptsTotal;
+    }
+
     public int getThreePointMakesTotal() {
         return this.threePointMakesTotal;
+    }
+
+    public int getFreeThrowAttemptsTotal() {
+        return this.freeThrowAttemptsTotal;
+    }
+
+    public int getFreeThrowMakesTotal() {
+        return this.freeThrowMakesTotal;
     }
 
     public int getTurnoversTotal() {
@@ -139,6 +143,10 @@ public class Team {
 
     public int getStealsTotal() {
         return this.stealsTotal;
+    }
+
+    public int getFoulsTotal() {
+        return this.foulsTotal;
     }
 
     public void setGamesPlayed(int gamesPlayed) {
@@ -153,16 +161,24 @@ public class Team {
         this.twoPointAttemptsTotal = twoPointAttemptsTotal;
     }
 
-    public void setThreePointAttemptsTotal(int threePointAttemptsTotal) {
-        this.threePointAttemptsTotal = threePointAttemptsTotal;
-    }
-
     public void setTwoPointMakesTotal(int twoPointMakesTotal) {
         this.twoPointMakesTotal = twoPointMakesTotal;
     }
 
+    public void setThreePointAttemptsTotal(int threePointAttemptsTotal) {
+        this.threePointAttemptsTotal = threePointAttemptsTotal;
+    }
+
     public void setThreePointMakesTotal(int threePointMakesTotal) {
         this.threePointMakesTotal = threePointMakesTotal;
+    }
+
+    public void setFreeThrowAttemptsTotal(int freeThrowAttemptsTotal) {
+        this.freeThrowAttemptsTotal = freeThrowAttemptsTotal;
+    }
+
+    public void setFreeThrowMakesTotal(int freeThrowMakesTotal) {
+        this.freeThrowMakesTotal = freeThrowMakesTotal;
     }
 
     public void setTurnoversTotal(int turnoversTotal) {
@@ -173,34 +189,63 @@ public class Team {
         this.stealsTotal = stealsTotal;
     }
 
+    public void setFoulsTotal(int foulsTotal) {
+        this.foulsTotal = foulsTotal;
+    }
+
     public void calculateAverages() {
         System.out.println("\n" + getFullName() + " statistics: ");
 
         this.pointsPerGame = (double) pointsTotal / gamesPlayed;
         this.twoPointAttemptsPerGame = (double) twoPointAttemptsTotal / gamesPlayed;
-        this.threePointAttemptsPerGame = (double) threePointAttemptsTotal / gamesPlayed;
         this.twoPointMakesPerGame = (double) twoPointMakesTotal / gamesPlayed;
+        this.threePointAttemptsPerGame = (double) threePointAttemptsTotal / gamesPlayed;
         this.threePointMakesPerGame = (double) threePointMakesTotal / gamesPlayed;
+        this.freeThrowAttemptsPerGame = (double) freeThrowAttemptsTotal / gamesPlayed;
+        this.freeThrowMakesPerGame = (double) freeThrowMakesTotal / gamesPlayed;
         this.attemptsPerGame = twoPointAttemptsPerGame + threePointAttemptsPerGame;
         this.makesPerGame = twoPointMakesPerGame + threePointMakesPerGame;
         this.turnoversPerGame = (double) this.turnoversTotal / gamesPlayed;
         this.stealsPerGame = (double) this.stealsTotal / gamesPlayed;
+        this.foulsPerGame = (double) this.foulsTotal / gamesPlayed;
 
         System.out.printf(
-                "\nPTS/g: %.2f\nTOV/g: %.2f\nSTL/g: %.2f\nFG%%: %.2f\n3P%%: %.2f\nWins: %d\nLosses: %d\n",
+                "\nPTS/g: %.2f\nTOV/g: %.2f\nSTL/g: %.2f\nFouls/g: %.2f\nFG%%: %.2f\n3P%%: %.2f\nFT%%: %.2f\nWins: %d\nLosses: %d\n",
                 pointsPerGame,
                 turnoversPerGame,
                 stealsPerGame,
+                foulsPerGame,
                 (makesPerGame / attemptsPerGame) * 100,
                 (threePointMakesPerGame / threePointAttemptsPerGame) * 100,
+                (freeThrowMakesPerGame / freeThrowAttemptsPerGame) * 100,
                 wins,
                 losses
         );
     }
 
+    public void initializeStatistics() {
+        // Player stats
+        this.score = 0;
+        this.gamesPlayed = 0;
+        this.pointsTotal = 0;
+        this.twoPointAttemptsTotal = 0;
+        this.twoPointMakesTotal = 0;
+        this.threePointAttemptsTotal = 0;
+        this.threePointMakesTotal = 0;
+        this.freeThrowAttemptsTotal = 0;
+        this.freeThrowMakesTotal = 0;
+        this.stealsTotal = 0;
+        this.turnoversTotal = 0;
+        this.foulsTotal = 0;
+
+        // Team stats
+        this.wins = 0;
+        this.losses = 0;
+    }
+
     void generateTeam() {
         for (int i = 0; i < this.roster.length; i++) {
-            this.roster[i] = new Player();
+            this.roster[i] = new Player(this);
         }
     }
 
