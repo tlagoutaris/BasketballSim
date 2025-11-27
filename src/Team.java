@@ -47,7 +47,9 @@ public class Team {
 
         // Statistic Totals
         initializeStatistics();
-        generateTeam();
+        
+        // Roster generation
+        generateRoster();
     }
 
     void simulateShot(Team opponent) {
@@ -243,7 +245,7 @@ public class Team {
         this.losses = 0;
     }
 
-    void generateTeam() {
+    void generateRoster() {
         for (int i = 0; i < this.roster.length; i++) {
             this.roster[i] = new Player(this);
         }

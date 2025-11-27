@@ -6,9 +6,9 @@ public class Main {
         Team t2 = new Team("Brooklyn", "Nets");
 
         Game g = new Game(t1, t2);
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 2_460; i++) {
             g.fullGameSimulation();
-            if (g.overtimes >= 0) {
+            if (g.overtimes >= 2) {
                 g.printScore();
                 System.out.println(i);
             }
@@ -19,10 +19,5 @@ public class Main {
         t1.printRoster();
         t2.calculateAverages();
         t2.printRoster();
-
-        /*
-        t1.printRoster();
-        t2.printRoster();
-         */
     }
 }

@@ -3,11 +3,6 @@ import java.security.SecureRandom;
 public class Game {
     SecureRandom r = new SecureRandom();
 
-    // CONSTANTS
-    final double NUM_MINUTES_PER_PERIOD = 12;
-    final double NUM_MINUTES_PER_OVERTIME_PERIOD = 5;
-    final int NUM_PERIODS = 4;
-
     double currentPeriodTimeLeft;
     Team homeTeam;
     Team awayTeam;
@@ -37,7 +32,7 @@ public class Game {
         currentPeriodTimeLeft = minutes * 60;
 
         while (currentPeriodTimeLeft > 0) {
-            possessionLength = BoundedNormalDistribution.generateBoundedNormal(14.4, 5, 0, 24);
+            possessionLength = BoundedNormalDistribution.generateBoundedNormal(Config.BASE_AVERAGE_POSSESSION_SECONDS, Config.BASE_AVERAGE_POSSESSION_STDDEV, 0, Config.NUM_SECONDS_POSSESSION);
             currentPeriodTimeLeft -= possessionLength;
             simulatePossession();
         }
@@ -49,14 +44,14 @@ public class Game {
 
     void regulationSimulation() {
         determinePossession();
-        for (int period = 0; period < NUM_PERIODS; period++) {
-            simulatePeriod(NUM_MINUTES_PER_PERIOD, false);
+        for (int period = 0; period < Config.NUM_PERIODS; period++) {
+            simulatePeriod(Config.NUM_MINUTES_PER_PERIOD, false);
         }
     }
 
     void overtimeSimulation() {
         determinePossession();
-        simulatePeriod(NUM_MINUTES_PER_OVERTIME_PERIOD, true);
+        simulatePeriod(Config.NUM_MINUTES_PER_OVERTIME_PERIOD, true);
     }
 
     void printScore() {
