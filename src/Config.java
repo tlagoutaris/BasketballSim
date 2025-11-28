@@ -4,6 +4,8 @@ public class Config {
     public static final int NUM_MINUTES_PER_PERIOD = 12;
     public static final int NUM_MINUTES_PER_OVERTIME_PERIOD = 5;
     public static final int NUM_PERIODS = 4;
+    public static final int REGULATION_PERIOD_LENGTH_SECONDS = NUM_MINUTES_PER_PERIOD * 60;
+    public static final int OVERTIME_PERIOD_LENGTH_SECONDS = NUM_MINUTES_PER_OVERTIME_PERIOD * 60;
 
     // Simulation averages
     public static final double BASE_TWO_POINT_PERCENTAGE = 54;

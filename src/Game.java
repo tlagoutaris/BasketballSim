@@ -1,100 +1,132 @@
 import java.security.SecureRandom;
 
 public class Game {
-    SecureRandom r = new SecureRandom();
+    SecureRandom r;
+    PossessionEngine possessionEngine;
 
-    double currentPeriodTimeLeft;
+    // Game state
     Team homeTeam;
     Team awayTeam;
-    double possessionLength;
-    char possession = 'H'; // H is home team, A is away team
-    int overtimes = 0;
+    Team currentOffense;
+    Team currentDefense;
+    int homeScore;
+    int awayScore;
+    int overtimes;
+    int currentPeriod;
+    boolean inOvertime;
 
-    public Game(Team homeTeam, Team awayTeam) {
+    // Constants
+
+    public Game(Team homeTeam, Team awayTeam, PossessionEngine possessionEngine) {
         this.homeTeam = homeTeam;
         this.awayTeam = awayTeam;
+        this.possessionEngine = possessionEngine;
+        this.r = new SecureRandom();
+        this.initializeGame();
     }
 
-    void simulatePossession() {
-        switch (possession) {
-            case 'H':
-                homeTeam.simulateShot(awayTeam);
-                possession = 'A';
-                break;
-            case 'A':
-                awayTeam.simulateShot(homeTeam);
-                possession = 'H';
-                break;
-        }
-    }
-
-    void simulatePeriod(double minutes, boolean isOvertime) {
-        currentPeriodTimeLeft = minutes * 60;
-
-        while (currentPeriodTimeLeft > 0) {
-            possessionLength = BoundedNormalDistribution.generateBoundedNormal(Config.BASE_AVERAGE_POSSESSION_SECONDS, Config.BASE_AVERAGE_POSSESSION_STDDEV, 0, Config.NUM_SECONDS_POSSESSION);
-            currentPeriodTimeLeft -= possessionLength;
-            simulatePossession();
-        }
-
-        if (isOvertime) {
-            overtimes++;
-        }
-    }
-
-    void regulationSimulation() {
-        determinePossession();
-        for (int period = 0; period < Config.NUM_PERIODS; period++) {
-            simulatePeriod(Config.NUM_MINUTES_PER_PERIOD, false);
-        }
-    }
-
-    void overtimeSimulation() {
-        determinePossession();
-        simulatePeriod(Config.NUM_MINUTES_PER_OVERTIME_PERIOD, true);
-    }
-
-    void printScore() {
-        if (overtimes > 0) {
-            System.out.println("FINAL/"+overtimes+"OT" + "\n" + homeTeam.getFullName() + ": " + homeTeam.getScore() + "\n" + awayTeam.getFullName() + ": " + awayTeam.getScore());
-            System.out.println();
-        } else {
-            System.out.println(homeTeam.getFullName() + ": " + homeTeam.getScore() + "\n" + awayTeam.getFullName() + ": " + awayTeam.getScore());
-            System.out.println();
-        }
+    void initializeGame() {
+        this.homeScore = 0;
+        this.awayScore = 0;
+        this.currentPeriod = 1;
+        this.inOvertime = false;
+        this.overtimes = 0;
+        this.determinePossession();
     }
 
     void determinePossession() {
-        int coin = r.nextInt(0, 2);
-        if (coin == 0) {
-            possession = 'H';
-        } else {
-            possession = 'A';
+        if (r.nextBoolean()) {
+            this.currentOffense = this.homeTeam;
+            this.currentDefense = this.awayTeam;
+        }
+
+        else {
+            this.currentOffense = this.awayTeam;
+            this.currentDefense = this.homeTeam;
         }
     }
 
-    void fullGameSimulation() {
-        regulationSimulation();
-        while (homeTeam.getScore() == awayTeam.getScore()) {
-            overtimeSimulation();
-        }
-        homeTeam.setPointsTotal(homeTeam.getPointsTotal() + homeTeam.getScore());
-        awayTeam.setPointsTotal(awayTeam.getPointsTotal() + awayTeam.getScore());
-        if (homeTeam.getScore() > awayTeam.getScore()) {
-            homeTeam.wins++;
-            awayTeam.losses++;
-        } else {
-            homeTeam.losses++;
-            awayTeam.wins++;
+    public void simulateGame() {
+
+        // Simulate regulation periods
+        for (int period = 1; period <= Config.NUM_PERIODS; period++) {
+            this.currentPeriod = period;
+            simulatePeriod(Config.REGULATION_PERIOD_LENGTH_SECONDS);
         }
 
-        homeTeam.setGamesPlayed(homeTeam.getGamesPlayed() + 1);
-        awayTeam.setGamesPlayed(awayTeam.getGamesPlayed() + 1);
+        // Check for overtime
+        while (homeScore == awayScore) {
+            this.inOvertime = true;
+            this.currentPeriod++;
+            this.overtimes++;
+            this.simulatePeriod(Config.OVERTIME_PERIOD_LENGTH_SECONDS);
+        }
+
+        this.determineWinner();
     }
 
-    void reset() {
-        homeTeam.setScore(0);
-        awayTeam.setScore(0);
-        overtimes = 0;
+    void simulatePeriod(double periodLength) {
+        double periodTimeLeft = periodLength;
+
+        while (periodTimeLeft > 0) {
+            // Simulate one possession
+            PossessionResult result = possessionEngine.simulatePossession(currentOffense, currentDefense);
+
+            // Update game based on possession result
+            this.updateScore(result);
+            periodTimeLeft -= result.getPossessionLength();
+
+            if (result.doesPossessionChange()) {
+                this.swapPossession();
+            }
+        }
+    }
+
+    void updateScore(PossessionResult result) {
+        int points = result.getPointsScored();
+        if (result.getOffense() == this.homeTeam) {
+            this.homeScore += points;
+        } else {
+            this.awayScore += points;
+        }
+    }
+
+    void swapPossession() {
+        Team temp = this.currentOffense;
+        this.currentOffense = this.currentDefense;
+        this.currentDefense = temp;
+    }
+
+    void determineWinner() {
+        homeTeam.getStatistics().gamesTotal++;
+        awayTeam.getStatistics().gamesTotal++;
+
+        if (this.homeScore > this.awayScore) {
+            homeTeam.getStatistics().winsTotal++;
+            awayTeam.getStatistics().lossesTotal++;
+        }
+
+        else {
+            awayTeam.getStatistics().winsTotal++;
+            homeTeam.getStatistics().lossesTotal++;
+        }
+    }
+
+    int getHomeScore() {
+        return this.homeScore;
+    }
+
+    int getAwayScore() {
+        return this.awayScore;
+    }
+
+    void printScore() {
+        if (this.overtimes > 0) {
+            System.out.println("FINAL/"+this.overtimes+"OT" + "\n" + this.homeTeam.getFullName() + ": " + this.getHomeScore() + "\n" + this.awayTeam.getFullName() + ": " + this.getAwayScore());
+            System.out.println();
+        } else {
+            System.out.println(this.homeTeam.getFullName() + ": " + this.getHomeScore() + "\n" + this.awayTeam.getFullName() + ": " + this.getAwayScore());
+            System.out.println();
+        }
     }
 }

@@ -1,0 +1,38 @@
+import java.security.SecureRandom;
+
+public class StealEngine {
+    private final SecureRandom r;
+
+    public StealEngine(SecureRandom r) {
+        this.r = r;
+    }
+
+    public StealResult attemptSteal(Player defender, Player playerWithBall) {
+        boolean stolen = false;
+        boolean foul = false;
+
+        double stealAttemptChance = r.nextDouble(Config.LOWER_BOUND, Config.UPPER_BOUND);
+        double stealSuccessChance = r.nextDouble(Config.LOWER_BOUND, Config.UPPER_BOUND);
+
+        // either you steal it or you don't
+        if (stealAttemptChance <= defender.stealAttemptTendency) {
+            // you attempt the steal
+            int attributeDifference = defender.steal - playerWithBall.ballControl;
+            double successThreshold = BoundedNormalDistribution.generateBoundedNormalDoubleInt(Config.BASE_STEAL_SUCCESS_CHANCE + (attributeDifference * Config.ATTRIBUTE_DIFFERENCE_MULTIPLIER), 10, Config.LOWER_BOUND, Config.UPPER_BOUND);
+
+            if (stealSuccessChance <= successThreshold) {
+                // if steal happens
+                stolen = true;
+            } else {
+                // Foul tendency
+                double foulChance = BoundedNormalDistribution.generateBoundedNormalDoubleInt(Config.BASE_FOUL_SUCCESS_CHANCE + (attributeDifference * Config.ATTRIBUTE_DIFFERENCE_MULTIPLIER), 10, Config.LOWER_BOUND, Config.UPPER_BOUND);
+                if (foulChance <= defender.foulTendency) {
+                    foul = true;
+                }
+            }
+
+        }
+
+        return new StealResult(stolen, foul, defender.getCurrentTeam());
+    }
+}
