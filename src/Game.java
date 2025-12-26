@@ -100,6 +100,8 @@ public class Game {
     void determineWinner() {
         homeTeam.getStatistics().gamesTotal++;
         awayTeam.getStatistics().gamesTotal++;
+        homeTeam.getStatistics().recordGamePlayed();
+        awayTeam.getStatistics().recordGamePlayed();
 
         if (this.homeScore > this.awayScore) {
             homeTeam.getStatistics().winsTotal++;

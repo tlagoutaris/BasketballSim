@@ -3,13 +3,20 @@ import java.security.SecureRandom;
 public class PossessionEngine {
     ShootingEngine shootingEngine;
     StealEngine stealEngine;
+    ReboundingEngine reboundingEngine;
     StatisticsService statisticsService;
     SecureRandom r;
 
-    public PossessionEngine(StealEngine stealEngine, ShootingEngine shootingEngine, StatisticsService statisticsService, SecureRandom r) {
-        this.stealEngine = stealEngine;
+    public PossessionEngine(ShootingEngine shootingEngine, ReboundingEngine reboundingEngine, StealEngine stealEngine, StatisticsService statisticsService, SecureRandom r) {
+        // Engines
         this.shootingEngine = shootingEngine;
+        this.reboundingEngine = reboundingEngine;
+        this.stealEngine = stealEngine;
+
+        // Statistics
         this.statisticsService = statisticsService;
+
+        // Tools
         this.r = r;
     }
 
@@ -43,7 +50,26 @@ public class PossessionEngine {
             statisticsService.recordFreeThrows(offensivePlayer, freeThrows);
 
             int totalPoints = shotResult.getPoints() + freeThrows.getFreeThrowsMade();
-            return new PossessionResult(PossessionResult.OutcomeType.SHOOTING_FOUL, offense, defense, totalPoints);
+            PossessionResult.OutcomeType outcome = PossessionResult.OutcomeType.SHOOTING_FOUL;
+
+            if (freeThrows.isLastFreeThrowMissed()) {
+                ReboundResult reboundResult = reboundingEngine.attemptRebound(offense, defense);
+                if (reboundResult.defenseRebounded) {
+                    statisticsService.recordDefensiveRebound(reboundResult.rebounder);
+                    outcome = PossessionResult.OutcomeType.DEFENSIVE_REBOUND;
+                }
+
+                else if (reboundResult.offenseRebounded) {
+                    statisticsService.recordOffensiveRebound(reboundResult.rebounder);
+                    outcome = PossessionResult.OutcomeType.OFFENSIVE_REBOUND;
+                }
+
+                else {
+                    outcome = PossessionResult.OutcomeType.SHOT_OUT_OF_BOUNDS;
+                }
+            }
+
+            return new PossessionResult(outcome, offense, defense, totalPoints);
         } else {
             // Regular shot attempt
             statisticsService.recordShot(offensivePlayer, shotResult);
@@ -51,7 +77,20 @@ public class PossessionEngine {
             if (shotResult.isMade()) {
                 outcome = PossessionResult.OutcomeType.SHOT_MADE;
             } else {
-                outcome = PossessionResult.OutcomeType.SHOT_MISSED;
+                ReboundResult reboundResult = reboundingEngine.attemptRebound(offense, defense);
+                if (reboundResult.defenseRebounded) {
+                    statisticsService.recordDefensiveRebound(reboundResult.rebounder);
+                    outcome = PossessionResult.OutcomeType.DEFENSIVE_REBOUND;
+                }
+
+                else if (reboundResult.offenseRebounded) {
+                    statisticsService.recordOffensiveRebound(reboundResult.rebounder);
+                    outcome = PossessionResult.OutcomeType.OFFENSIVE_REBOUND;
+                }
+
+                else {
+                    outcome = PossessionResult.OutcomeType.SHOT_OUT_OF_BOUNDS;
+                }
             }
 
             return new PossessionResult(outcome, offense, defense, shotResult.getPoints());

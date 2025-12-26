@@ -4,7 +4,9 @@ public class PossessionResult {
         NON_SHOOTING_FOUL,
         SHOOTING_FOUL,
         SHOT_MADE,
-        SHOT_MISSED,
+        SHOT_OUT_OF_BOUNDS,
+        OFFENSIVE_REBOUND,
+        DEFENSIVE_REBOUND,
         TURNOVER
     }
 
@@ -52,12 +54,14 @@ public class PossessionResult {
             // Outcome types which result in possession changes
             case STEAL:
             case SHOT_MADE:
-            case SHOT_MISSED:
+            case DEFENSIVE_REBOUND:
             case TURNOVER:
+            case SHOT_OUT_OF_BOUNDS:
                 return true;
             // Outcome type which do not result in possession changes
             case NON_SHOOTING_FOUL:
             case SHOOTING_FOUL:
+            case OFFENSIVE_REBOUND:
                 return false;
             default:
                 return true;

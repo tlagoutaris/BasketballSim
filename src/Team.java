@@ -37,6 +37,10 @@ public class Team {
         }
     }
 
+    Player[] getRoster() {
+        return this.roster;
+    }
+
     void printRoster() {
         System.out.printf("\n%s %s Roster: %n", this.city, this.team);
 

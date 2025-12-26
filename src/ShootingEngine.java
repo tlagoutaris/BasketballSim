@@ -24,7 +24,7 @@ public class ShootingEngine {
 
             // Calculate user's offense against opponent's defense
             int attributeDifference = shooter.twoPointOffense - defender.twoPointDefense;
-            double successThreshold = BoundedNormalDistribution.generateBoundedNormalDoubleInt(Config.BASE_TWO_POINT_PERCENTAGE + (attributeDifference * Config.ATTRIBUTE_DIFFERENCE_MULTIPLIER), 10, Config.LOWER_BOUND, Config.UPPER_BOUND);
+            double successThreshold = BoundedNormalDistribution.generateBoundedNormalDoubleInt(Config.BASE_TWO_POINT_PERCENTAGE + (attributeDifference * Config.ATTRIBUTE_DIFFERENCE_MULTIPLIER), Config.BASE_ATTRIBUTE_STDDEV, Config.LOWER_BOUND, Config.UPPER_BOUND);
 
             if (shotSuccessChance <= successThreshold) {
                 points = 2;
@@ -88,8 +88,9 @@ public class ShootingEngine {
 
     FreeThrowResult attemptFreeThrows(Player shooter, int freeThrowAttempts) {
         int points = 0;
+        boolean lastFreeThrowMissed = false;
 
-        for (int i = 0; i < freeThrowAttempts; i++) {
+        for (int i = 0; i < freeThrowAttempts - 1; i++) {
             double freeThrowSuccessChance = r.nextDouble(Config.LOWER_BOUND, Config.UPPER_BOUND);
             if (freeThrowSuccessChance <= shooter.freeThrow) {
                 // Made free throw
@@ -97,6 +98,14 @@ public class ShootingEngine {
             }
         }
 
-        return new FreeThrowResult(freeThrowAttempts, points);
+        double freeThrowSuccessChance = r.nextDouble(Config.LOWER_BOUND, Config.UPPER_BOUND);
+        if (freeThrowSuccessChance <= shooter.freeThrow) {
+            // Made free throw
+            points++;
+        } else {
+            lastFreeThrowMissed = true;
+        }
+
+        return new FreeThrowResult(freeThrowAttempts, points, lastFreeThrowMissed);
     }
 }
