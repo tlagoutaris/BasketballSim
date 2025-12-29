@@ -1,3 +1,5 @@
+package util;
+
 import java.util.ArrayList;
 import java.security.SecureRandom;
 
@@ -5,7 +7,7 @@ public class RandomName {
     static ArrayList<String> firstNames = new ArrayList<>();
     static ArrayList<String> lastNames = new ArrayList<>();
 
-    static String generateRandomFirstName() {
+    public static String generateRandomFirstName() {
         SecureRandom r = new SecureRandom();
 
         if (firstNames.isEmpty()) {
@@ -15,7 +17,7 @@ public class RandomName {
         return firstNames.get(r.nextInt(0, firstNames.size()));
     }
 
-    static String generateRandomLastName() {
+    public static String generateRandomLastName() {
         SecureRandom r = new SecureRandom();
 
         if (lastNames.isEmpty()) {
@@ -25,7 +27,7 @@ public class RandomName {
         return lastNames.get(r.nextInt(0, lastNames.size()));
     }
 
-    static void initFirstNames() {
+    public static void initFirstNames() {
         firstNames.add("Jimmy");
         firstNames.add("Billy");
         firstNames.add("Hunter");
@@ -124,7 +126,7 @@ public class RandomName {
         firstNames.add("Phuckoff");
     }
 
-    static void initLastNames() {
+    public static void initLastNames() {
         lastNames.add("Williams");
         lastNames.add("Madoff");
         lastNames.add("Hunter");

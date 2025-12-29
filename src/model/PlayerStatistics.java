@@ -1,7 +1,15 @@
-public class TeamStatistics {
-    Team team;
+package model;
+
+import model.Player;
+import result.FreeThrowResult;
+import result.ShotResult;
+import result.StealResult;
+
+public class PlayerStatistics {
+    Player player;
 
     // Totals
+    int gamesTotal;
     int pointsTotal;
     int twoPointAttemptsTotal;
     int twoPointMakesTotal;
@@ -33,30 +41,29 @@ public class TeamStatistics {
     double offensiveReboundsPerGame;
     double defensiveReboundsPerGame;
 
-    // Team Stats
-    int gamesTotal;
-    int winsTotal;
-    int lossesTotal;
-
-    public TeamStatistics(Team team) {
-        this.team = team;
+    public PlayerStatistics(Player player) {
+        this.player = player;
 
         initializeTotals();
         initializeAverages();
     }
 
     public void recordShotAttempt(ShotResult shot) {
-        if (shot.shotType.equals("2PT")) {
-            this.twoPointAttemptsTotal++;
+        if (shot.getShotType().equals("2PT")) {
             if (shot.isMade()) {
+                this.twoPointAttemptsTotal++;
                 this.twoPointMakesTotal++;
+            } else if (!shot.drewFoul() && !shot.isMade()) {
+                this.twoPointAttemptsTotal++;
             }
         }
 
-        else if (shot.shotType.equals("3PT")) {
-            this.threePointAttemptsTotal++;
+        else if (shot.getShotType().equals("3PT")) {
             if (shot.isMade()) {
+                this.threePointAttemptsTotal++;
                 this.threePointMakesTotal++;
+            } else if (!shot.drewFoul() && !shot.isMade()) {
+                this.threePointAttemptsTotal++;
             }
         }
 
@@ -64,9 +71,9 @@ public class TeamStatistics {
     }
 
     public void recordFreeThrowAttempt(FreeThrowResult freeThrow) {
-        this.freeThrowAttemptsTotal += freeThrow.freeThrowAttempts;
-        this.freeThrowMakesTotal += freeThrow.freeThrowsMade;
-        this.pointsTotal += freeThrow.freeThrowsMade;
+        this.freeThrowAttemptsTotal += freeThrow.getFreeThrowAttempts();
+        this.freeThrowMakesTotal += freeThrow.getFreeThrowsMade();
+        this.pointsTotal += freeThrow.getFreeThrowsMade();
     }
 
     public void recordStealAttempt(StealResult stealAttempt) {
@@ -91,22 +98,16 @@ public class TeamStatistics {
         this.reboundsTotal++;
     }
 
-    public void recordOffensiveRebound() {
-        this.offensiveReboundsTotal++;
-    }
-
     public void recordDefensiveRebound() {
         this.defensiveReboundsTotal++;
     }
 
-    public void recordTurnover() {
-        this.turnoversTotal++;
+    public void recordOffensiveRebound() {
+        this.offensiveReboundsTotal++;
     }
 
-    public void recordGamePlayed() {
-        for (int i = 0; i < this.team.roster.length; i++) {
-            this.team.roster[i].getStatistics().gamesTotal++;
-        }
+    public void recordTurnover() {
+        this.turnoversTotal++;
     }
 
     public void calculateAverages() {
@@ -127,7 +128,7 @@ public class TeamStatistics {
         this.defensiveReboundsPerGame = (double) this.defensiveReboundsTotal / gamesTotal;
     }
 
-    void initializeTotals() {
+    public void initializeTotals() {
         this.pointsTotal = 0;
         this.twoPointAttemptsTotal = 0;
         this.twoPointMakesTotal = 0;
@@ -143,11 +144,9 @@ public class TeamStatistics {
         this.defensiveReboundsTotal = 0;
 
         this.gamesTotal = 0;
-        this.winsTotal = 0;
-        this.lossesTotal = 0;
     }
 
-    void initializeAverages() {
+    public void initializeAverages() {
         this.pointsPerGame = 0.0;
         this.twoPointAttemptsPerGame = 0.0;
         this.twoPointMakesPerGame = 0.0;
@@ -166,13 +165,11 @@ public class TeamStatistics {
     }
 
     public void printAverages() {
-        if (this.pointsPerGame == 0.0) { // Could technically be true even if the team has played before, but it is going to be true that the team hasn't played in pretty much 100% of the time.
-            calculateAverages();
-        }
+        calculateAverages();
 
-        System.out.println("\n" + this.team.getFullName() + " statistics: ");
+        System.out.println("\n" + this.player.getFullName() + " statistics: ");
         System.out.printf(
-                "\nPTS/g: %.2f\nREB/g: %.2f\nOREB/g: %.2f\nTOV/g: %.2f\nSTL/g: %.2f\nFouls/g: %.2f\nFG%%: %.2f\n3P%%: %.2f\nFT%%: %.2f\nWins: %d\nLosses: %d\n",
+                "\nPTS/g: %.2f\nREB/g: %.2f\nOREB/g: %.2f\nTOV/g: %.2f\nSTL/g: %.2f\nFouls/g: %.2f\nFG%%: %.2f\n3P%%: %.2f\nFT%%: %.2f\n",
                 pointsPerGame,
                 reboundsPerGame,
                 offensiveReboundsPerGame,
@@ -181,15 +178,7 @@ public class TeamStatistics {
                 foulsPerGame,
                 (makesPerGame / attemptsPerGame) * 100,
                 (threePointMakesPerGame / threePointAttemptsPerGame) * 100,
-                (freeThrowMakesPerGame / freeThrowAttemptsPerGame) * 100,
-                winsTotal,
-                lossesTotal
+                (freeThrowMakesPerGame / freeThrowAttemptsPerGame) * 100
         );
-    }
-
-    public void printPlayerAverages() {
-        for (int i = 0; i < team.roster.length; i++) {
-            team.roster[i].getStatistics().printAverages();
-        }
     }
 }

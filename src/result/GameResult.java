@@ -1,3 +1,5 @@
+package result;
+
 public class GameResult {
     boolean won;
     public GameResult(boolean won) {

@@ -1,3 +1,7 @@
+package result;
+
+import model.Team;
+
 public class ShotResult {
     String shotType; // 2PT, 3PT
     boolean isMade;
@@ -17,31 +21,31 @@ public class ShotResult {
         this.numFreeThrows = numFreeThrows;
     }
 
-    String shotType() {
+    public String getShotType() {
         return this.shotType;
     }
 
-    boolean isMade() {
+    public boolean isMade() {
         return this.isMade;
     }
 
-    int getPoints() {
+    public int getPoints() {
         return this.points;
     }
 
-    boolean drewFoul() {
+    public boolean drewFoul() {
         return this.drewFoul;
     }
 
-    Team getOffensiveTeam() {
+    public Team getOffensiveTeam() {
         return this.offensiveTeam;
     }
 
-    Team getDefendingTeam() {
+    public Team getDefendingTeam() {
         return this.defendingTeam;
     }
 
-    int freeThrowsAwarded() {
+    public int freeThrowsAwarded() {
         return this.numFreeThrows;
     }
 }

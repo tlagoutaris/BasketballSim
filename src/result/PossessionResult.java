@@ -1,3 +1,9 @@
+package result;
+
+import model.Team;
+import util.BoundedNormalDistribution;
+import config.Config;
+
 public class PossessionResult {
     public enum OutcomeType {
         STEAL,
@@ -11,12 +17,12 @@ public class PossessionResult {
     }
 
     OutcomeType outcomeType;
-    Team offense; // Team that started with possession
-    Team defense; // Team that started that possession on defense
+    Team offense; // model.Team that started with possession
+    Team defense; // model.Team that started that possession on defense
     int pointsScored;
     double possessionLength;
 
-    PossessionResult(OutcomeType outcomeType, Team offense, Team defense, int pointsScored) {
+    public PossessionResult(OutcomeType outcomeType, Team offense, Team defense, int pointsScored) {
         this.outcomeType = outcomeType;
         this.offense = offense;
         this.defense = defense;
@@ -24,7 +30,7 @@ public class PossessionResult {
         this.possessionLength = calculatePossessionLength();
     }
 
-    double calculatePossessionLength() {
+    public double calculatePossessionLength() {
         return BoundedNormalDistribution.generateBoundedNormalDoubleInt(Config.BASE_AVERAGE_POSSESSION_SECONDS, 5, 0, 24);
     }
 
@@ -33,23 +39,23 @@ public class PossessionResult {
         return outcomeType;
     }
 
-    Team getOffense() {
+    public Team getOffense() {
         return this.offense;
     }
 
-    Team getDefense() {
+    public Team getDefense() {
         return this.defense;
     }
 
-    int getPointsScored() {
+    public int getPointsScored() {
         return this.pointsScored;
     }
 
-    double getPossessionLength() {
+    public double getPossessionLength() {
         return this.possessionLength;
     }
 
-    boolean doesPossessionChange() {
+    public boolean doesPossessionChange() {
         switch (outcomeType) {
             // Outcome types which result in possession changes
             case STEAL:
@@ -68,7 +74,7 @@ public class PossessionResult {
         }
     }
 
-    Team getNextPossessionTeam() {
+    public Team getNextPossessionTeam() {
         return doesPossessionChange() ? defense : offense;
     }
 }

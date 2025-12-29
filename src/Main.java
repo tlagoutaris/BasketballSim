@@ -1,3 +1,10 @@
+import model.Game;
+import model.Team;
+import service.StatisticsService;
+import simulation.PossessionEngine;
+import simulation.ReboundingEngine;
+import simulation.ShootingEngine;
+import simulation.StealEngine;
 import java.security.SecureRandom;
 
 public class Main {
@@ -15,7 +22,7 @@ public class Main {
         Game g = new Game(t1, t2, possessionEngine);
         for (int i = 0; i < 2_460; i++) {
             g.simulateGame();
-            if (g.overtimes >= 2) {
+            if (g.getOvertimes() >= 2) {
                 g.printScore();
                 System.out.println(i);
             }

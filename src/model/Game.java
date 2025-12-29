@@ -1,10 +1,16 @@
+package model;
+
+import simulation.PossessionEngine;
+import result.PossessionResult;
+import config.Config;
+
 import java.security.SecureRandom;
 
 public class Game {
     SecureRandom r;
     PossessionEngine possessionEngine;
 
-    // Game state
+    // model.Game state
     Team homeTeam;
     Team awayTeam;
     Team currentOffense;
@@ -25,7 +31,7 @@ public class Game {
         this.initializeGame();
     }
 
-    void initializeGame() {
+    public void initializeGame() {
         this.homeScore = 0;
         this.awayScore = 0;
         this.currentPeriod = 1;
@@ -34,7 +40,7 @@ public class Game {
         this.determinePossession();
     }
 
-    void determinePossession() {
+    public void determinePossession() {
         if (r.nextBoolean()) {
             this.currentOffense = this.homeTeam;
             this.currentDefense = this.awayTeam;
@@ -65,7 +71,7 @@ public class Game {
         this.determineWinner();
     }
 
-    void simulatePeriod(double periodLength) {
+    public void simulatePeriod(double periodLength) {
         double periodTimeLeft = periodLength;
 
         while (periodTimeLeft > 0) {
@@ -82,7 +88,7 @@ public class Game {
         }
     }
 
-    void updateScore(PossessionResult result) {
+    public void updateScore(PossessionResult result) {
         int points = result.getPointsScored();
         if (result.getOffense() == this.homeTeam) {
             this.homeScore += points;
@@ -91,13 +97,13 @@ public class Game {
         }
     }
 
-    void swapPossession() {
+    public void swapPossession() {
         Team temp = this.currentOffense;
         this.currentOffense = this.currentDefense;
         this.currentDefense = temp;
     }
 
-    void determineWinner() {
+    public void determineWinner() {
         homeTeam.getStatistics().gamesTotal++;
         awayTeam.getStatistics().gamesTotal++;
         homeTeam.getStatistics().recordGamePlayed();
@@ -114,15 +120,19 @@ public class Game {
         }
     }
 
-    int getHomeScore() {
+    public int getOvertimes() {
+        return this.overtimes;
+    }
+
+    public int getHomeScore() {
         return this.homeScore;
     }
 
-    int getAwayScore() {
+    public int getAwayScore() {
         return this.awayScore;
     }
 
-    void printScore() {
+    public void printScore() {
         if (this.overtimes > 0) {
             System.out.println("FINAL/"+this.overtimes+"OT" + "\n" + this.homeTeam.getFullName() + ": " + this.getHomeScore() + "\n" + this.awayTeam.getFullName() + ": " + this.getAwayScore());
             System.out.println();

@@ -1,3 +1,10 @@
+package service;
+
+import model.Player;
+import result.FreeThrowResult;
+import result.ShotResult;
+import result.StealResult;
+
 public class StatisticsService {
 
     public StatisticsService() {

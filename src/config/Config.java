@@ -1,3 +1,5 @@
+package config;
+
 public class Config {
     // Simulation Parameters
     public static final int NUM_SECONDS_POSSESSION = 24;

@@ -1,3 +1,7 @@
+package result;
+
+import model.Player;
+
 public class ReboundResult {
     boolean offenseRebounded;
     boolean defenseRebounded;
@@ -13,17 +17,16 @@ public class ReboundResult {
 
     // Getters
 
-    boolean isOffenseRebounded() {
+    public boolean isOffenseRebounded() {
         return this.offenseRebounded;
     }
-    boolean isDefenseRebounded() {
+    public boolean isDefenseRebounded() {
         return this.defenseRebounded;
     }
-    boolean hasFoul() {
+    public boolean hasFoul() {
         return this.hasFoul;
     }
-
-    Player getRebounder() {
+    public Player getRebounder() {
         return this.rebounder;
     }
 }

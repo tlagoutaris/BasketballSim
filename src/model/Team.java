@@ -1,3 +1,5 @@
+package model;
+
 import java.security.SecureRandom;
 
 public class Team {
@@ -13,7 +15,7 @@ public class Team {
     TeamStatistics statistics;
 
     public Team(String city, String team) {
-        // Team information
+        // model.Team information
         this.city = city;
         this.team = team;
         this.statistics = new TeamStatistics(this);
@@ -23,25 +25,25 @@ public class Team {
     }
 
     // Getters & Setters
-    TeamStatistics getStatistics() {
+    public TeamStatistics getStatistics() {
         return this.statistics;
     }
 
-    String getFullName() {
+    public String getFullName() {
         return this.city + " " + this.team;
     }
 
-    void generateRoster() {
+    public void generateRoster() {
         for (int i = 0; i < this.roster.length; i++) {
             this.roster[i] = new Player(this);
         }
     }
 
-    Player[] getRoster() {
+    public Player[] getRoster() {
         return this.roster;
     }
 
-    void printRoster() {
+    public void printRoster() {
         System.out.printf("\n%s %s Roster: %n", this.city, this.team);
 
         for (Player p : roster) {

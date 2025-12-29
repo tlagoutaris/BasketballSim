@@ -1,3 +1,5 @@
+package util;
+
 import java.security.SecureRandom;
 
 public class BoundedNormalDistribution {

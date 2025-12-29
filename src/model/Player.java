@@ -1,4 +1,8 @@
-import java.security.SecureRandom;
+package model;
+
+import util.BoundedNormalDistribution;
+import util.RandomName;
+import config.Config;
 
 public class Player {
     // Personal information
@@ -44,7 +48,7 @@ public class Player {
         generateTendencies();
     }
 
-    void generateAttributes() {
+    public void generateAttributes() {
         // Offense
         this.twoPointOffense = randomAttribute();
         this.threePointOffense = randomAttribute();
@@ -59,7 +63,7 @@ public class Player {
         this.defensiveRebounding = randomAttribute();
     }
 
-    void generateTendencies() {
+    public void generateTendencies() {
         // Offense
         this.twoPointTendency = BoundedNormalDistribution.generateBoundedNormalDoubleInt(Config.BASE_TWO_POINT_ATTEMPT_TENDENCY, Config.BASE_TENDENCY_STDDEV, Config.LOWER_BOUND, Config.UPPER_BOUND);
         this.threePointTendency = 1 - this.twoPointTendency;
@@ -71,7 +75,7 @@ public class Player {
         this.defensiveReboundingTendency = BoundedNormalDistribution.generateBoundedNormalDoubleInt(Config.BASE_DEFENSIVE_REBOUND_TENDENCY, Config.BASE_TENDENCY_STDDEV, Config.LOWER_BOUND, Config.UPPER_BOUND);
     }
 
-    int randomAttribute() {
+    public int randomAttribute() {
         return BoundedNormalDistribution.generateBoundedNormalDoubleInt(Config.BASE_ATTRIBUTE_MEAN, Config.BASE_ATTRIBUTE_STDDEV, Config.LOWER_BOUND, Config.UPPER_BOUND);
     }
 
@@ -84,11 +88,73 @@ public class Player {
         return this.currentTeam;
     }
 
-    String getFullName() {
+    public String getFullName() {
         return this.firstName + " " + this.lastName;
     }
 
-    String getStats() {
+    // Attributes
+    public int getTwoPointOffense() {
+        return this.twoPointOffense;
+    }
+
+    public int getThreePointOffense() {
+        return this.threePointOffense;
+    }
+
+    public int getFreeThrow() {
+        return this.freeThrow;
+    }
+
+    public int getBallControl() {
+        return this.ballControl;
+    }
+
+    public int getTwoPointDefense() {
+        return this.twoPointDefense;
+    }
+
+    public int getThreePointDefense() {
+        return this.threePointDefense;
+    }
+
+    public int getSteal() {
+        return this.steal;
+    }
+
+    // Tendencies
+    public double getTwoPointTendency() {
+        return this.twoPointTendency;
+    }
+
+    public double getThreePointTendency() {
+        return this.threePointTendency;
+    }
+
+    public double getStealAttemptTendency() {
+        return this.stealAttemptTendency;
+    }
+
+    public double getFoulTendency() {
+        return this.foulTendency;
+    }
+
+    public double getOffensiveReboundingTendency() {
+        return this.offensiveReboundingTendency;
+    }
+
+    public double getDefensiveReboundingTendency() {
+        return this.defensiveReboundingTendency;
+    }
+
+    public int getOffensiveRebounding() {
+        return this.offensiveRebounding;
+    }
+
+    public int getDefensiveRebounding() {
+        return this.defensiveRebounding;
+    }
+
+    public String getStats() {
                 // Offense
         return "\n2PT Offense: " + this.twoPointOffense +
                 "\n3PT Offense: " + this.threePointOffense +
@@ -97,7 +163,9 @@ public class Player {
                 // Defense
                 "\n2PT Defense: " + this.twoPointDefense +
                 "\n3PT Defense: " + this.threePointDefense +
-                "\nSteal: " + this.steal
+                "\nSteal: " + this.steal +
+                "\nOffensive Rebounding: " + this.offensiveRebounding +
+                "\nDefensive Rebounding: " + this.defensiveRebounding
                 + "\n";
     }
 }

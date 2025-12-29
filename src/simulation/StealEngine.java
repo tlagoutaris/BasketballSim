@@ -1,3 +1,9 @@
+package simulation;
+
+import config.Config;
+import util.BoundedNormalDistribution;
+import model.Player;
+import result.StealResult;
 import java.security.SecureRandom;
 
 public class StealEngine {
@@ -15,9 +21,9 @@ public class StealEngine {
         double stealSuccessChance = r.nextDouble(Config.LOWER_BOUND, Config.UPPER_BOUND);
 
         // either you steal it or you don't
-        if (stealAttemptChance <= defender.stealAttemptTendency) {
+        if (stealAttemptChance <= defender.getStealAttemptTendency()) {
             // you attempt the steal
-            int attributeDifference = defender.steal - playerWithBall.ballControl;
+            int attributeDifference = defender.getSteal() - playerWithBall.getBallControl();
             double successThreshold = BoundedNormalDistribution.generateBoundedNormalDoubleInt(Config.BASE_STEAL_SUCCESS_CHANCE + (attributeDifference * Config.ATTRIBUTE_DIFFERENCE_MULTIPLIER), 10, Config.LOWER_BOUND, Config.UPPER_BOUND);
 
             if (stealSuccessChance <= successThreshold) {
@@ -26,7 +32,7 @@ public class StealEngine {
             } else {
                 // Foul tendency
                 double foulChance = BoundedNormalDistribution.generateBoundedNormalDoubleInt(Config.BASE_FOUL_SUCCESS_CHANCE + (attributeDifference * Config.ATTRIBUTE_DIFFERENCE_MULTIPLIER), 10, Config.LOWER_BOUND, Config.UPPER_BOUND);
-                if (foulChance <= defender.foulTendency) {
+                if (foulChance <= defender.getFoulTendency()) {
                     foul = true;
                 }
             }

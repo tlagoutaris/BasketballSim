@@ -1,3 +1,7 @@
+package result;
+
+import model.Team;
+
 public class StealResult {
     boolean stolen;
     boolean hasFoul;
@@ -11,14 +15,14 @@ public class StealResult {
 
     // Getters
 
-    boolean stolen() {
+    public boolean stolen() {
         return this.stolen;
     }
-    boolean hasFoul() {
+    public boolean hasFoul() {
         return this.hasFoul;
     }
 
-    Team stealingTeam() {
+    public Team stealingTeam() {
         return this.stealingTeam;
     }
 }

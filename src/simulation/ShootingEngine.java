@@ -1,3 +1,10 @@
+package simulation;
+
+import config.Config;
+import util.BoundedNormalDistribution;
+import model.Player;
+import result.FreeThrowResult;
+import result.ShotResult;
 import java.security.SecureRandom;
 
 public class ShootingEngine {
@@ -18,12 +25,12 @@ public class ShootingEngine {
         double shotSuccessChance = r.nextDouble(Config.LOWER_BOUND, Config.UPPER_BOUND);
         double foulChance;
 
-        if (shotTypeChance <= shooter.twoPointTendency) {
+        if (shotTypeChance <= shooter.getTwoPointTendency()) {
             // 2PT
             shotType = "2PT";
 
             // Calculate user's offense against opponent's defense
-            int attributeDifference = shooter.twoPointOffense - defender.twoPointDefense;
+            int attributeDifference = shooter.getTwoPointOffense() - defender.getTwoPointDefense();
             double successThreshold = BoundedNormalDistribution.generateBoundedNormalDoubleInt(Config.BASE_TWO_POINT_PERCENTAGE + (attributeDifference * Config.ATTRIBUTE_DIFFERENCE_MULTIPLIER), Config.BASE_ATTRIBUTE_STDDEV, Config.LOWER_BOUND, Config.UPPER_BOUND);
 
             if (shotSuccessChance <= successThreshold) {
@@ -32,7 +39,7 @@ public class ShootingEngine {
 
                 // Check for foul
                 foulChance = r.nextDouble(Config.LOWER_BOUND, Config.UPPER_BOUND);
-                if (foulChance <= defender.foulTendency) {
+                if (foulChance <= defender.getFoulTendency()) {
                     // Made and-1 2pt shot
                     drewFoul = true;
                     numFreeThrows = 1;
@@ -43,7 +50,7 @@ public class ShootingEngine {
 
                 // Check for foul
                 foulChance = r.nextDouble(Config.LOWER_BOUND, Config.UPPER_BOUND);
-                if (foulChance <= defender.foulTendency) {
+                if (foulChance <= defender.getFoulTendency()) {
                     // Missed 2pt shot but got fouled
                     drewFoul = true;
                     numFreeThrows = 2;
@@ -54,7 +61,7 @@ public class ShootingEngine {
             // 3PT
             shotType = "3PT";
 
-            int attributeDifference = shooter.threePointOffense - defender.threePointDefense;
+            int attributeDifference = shooter.getThreePointOffense() - defender.getThreePointDefense();
             double successThreshold = BoundedNormalDistribution.generateBoundedNormalDoubleInt(Config.BASE_THREE_POINT_PERCENTAGE + (attributeDifference * Config.ATTRIBUTE_DIFFERENCE_MULTIPLIER), 10, Config.LOWER_BOUND, Config.UPPER_BOUND);
 
             if (shotSuccessChance <= successThreshold) {
@@ -63,7 +70,7 @@ public class ShootingEngine {
 
                 // Check for foul
                 foulChance = r.nextDouble(Config.LOWER_BOUND, Config.UPPER_BOUND);
-                if (foulChance <= defender.foulTendency) {
+                if (foulChance <= defender.getFoulTendency()) {
                     // Fouled
                     drewFoul = true;
                     numFreeThrows = 1;
@@ -73,7 +80,7 @@ public class ShootingEngine {
 
                 // Check for foul
                 foulChance = r.nextDouble(Config.LOWER_BOUND, Config.UPPER_BOUND);
-                if (foulChance <= defender.foulTendency) {
+                if (foulChance <= defender.getFoulTendency()) {
                     // Missed 3pt shot but got fouled
                     drewFoul = true;
                     numFreeThrows = 3;
@@ -82,24 +89,24 @@ public class ShootingEngine {
 
         }
 
-        // String shotType, boolean isMade, int points, boolean drewFoul, Team offensiveTeam, Team defendingTeam
+        // String shotType, boolean isMade, int points, boolean drewFoul, model.Team offensiveTeam, model.Team defendingTeam
         return new ShotResult(shotType, made, points, drewFoul, shooter.getCurrentTeam(), defender.getCurrentTeam(), numFreeThrows);
     }
 
-    FreeThrowResult attemptFreeThrows(Player shooter, int freeThrowAttempts) {
+    public FreeThrowResult attemptFreeThrows(Player shooter, int freeThrowAttempts) {
         int points = 0;
         boolean lastFreeThrowMissed = false;
 
         for (int i = 0; i < freeThrowAttempts - 1; i++) {
             double freeThrowSuccessChance = r.nextDouble(Config.LOWER_BOUND, Config.UPPER_BOUND);
-            if (freeThrowSuccessChance <= shooter.freeThrow) {
+            if (freeThrowSuccessChance <= shooter.getFreeThrow()) {
                 // Made free throw
                 points++;
             }
         }
 
         double freeThrowSuccessChance = r.nextDouble(Config.LOWER_BOUND, Config.UPPER_BOUND);
-        if (freeThrowSuccessChance <= shooter.freeThrow) {
+        if (freeThrowSuccessChance <= shooter.getFreeThrow()) {
             // Made free throw
             points++;
         } else {

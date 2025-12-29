@@ -1,3 +1,5 @@
+package result;
+
 public class FreeThrowResult {
     int freeThrowAttempts;
     int freeThrowsMade;
@@ -7,6 +9,10 @@ public class FreeThrowResult {
         this.freeThrowAttempts = freeThrowAttempts;
         this.freeThrowsMade = freeThrowsMade;
         this.lastFreeThrowMissed = lastFreeThrowMissed;
+    }
+
+    public int getFreeThrowAttempts() {
+        return this.freeThrowAttempts;
     }
 
     public int getFreeThrowsMade() {

@@ -1,3 +1,10 @@
+package simulation;
+
+import config.Config;
+import util.BoundedNormalDistribution;
+import model.Team;
+import model.Player;
+import result.ReboundResult;
 import java.security.SecureRandom;
 
 public class ReboundingEngine {
@@ -18,7 +25,7 @@ public class ReboundingEngine {
         Player defensiveRebounder = determineRebounder(defensiveTeam, false);
 
         // Calculate the offensive player's rebounding vs defensive player's rebounding
-        int attributeDifference = defensiveRebounder.defensiveRebounding - offensiveRebounder.offensiveRebounding;
+        int attributeDifference = defensiveRebounder.getDefensiveRebounding() - offensiveRebounder.getOffensiveRebounding();
 
         double reboundSuccessChance = r.nextDouble(Config.LOWER_BOUND, Config.UPPER_BOUND);
         double successThreshold = BoundedNormalDistribution.generateBoundedNormalDoubleInt(Config.BASE_DEFENSIVE_REBOUND_TENDENCY + (attributeDifference * Config.ATTRIBUTE_DIFFERENCE_MULTIPLIER), Config.BASE_ATTRIBUTE_STDDEV, Config.LOWER_BOUND, Config.UPPER_BOUND);
@@ -32,7 +39,7 @@ public class ReboundingEngine {
             rebounder = defensiveRebounder;
             // determine if foul
             double foulChance = r.nextDouble(Config.LOWER_BOUND, Config.UPPER_BOUND);
-            if (foulChance <= defensiveRebounder.foulTendency) {
+            if (foulChance <= defensiveRebounder.getFoulTendency()) {
                 defenseRebounded = false;
                 hasFoul = true;
                 rebounder = null;
@@ -45,7 +52,7 @@ public class ReboundingEngine {
             rebounder = offensiveRebounder;
             // determine if foul
             double foulChance = r.nextDouble(Config.LOWER_BOUND, Config.UPPER_BOUND);
-            if (foulChance <= offensiveRebounder.foulTendency) {
+            if (foulChance <= offensiveRebounder.getFoulTendency()) {
                 offenseRebounded = false;
                 hasFoul = true;
                 rebounder = null;
@@ -64,7 +71,7 @@ public class ReboundingEngine {
         if (onOffense) {
             for (int i = 0; i < team.getRoster().length; i++) {
                 Player p = team.getRoster()[i];
-                tendenciesSum += p.offensiveReboundingTendency;
+                tendenciesSum += p.getOffensiveReboundingTendency();
                 runningSum[i + 1] = tendenciesSum;
             }
         }
@@ -72,7 +79,7 @@ public class ReboundingEngine {
         else {
             for (int i = 0; i < team.getRoster().length; i++) {
                 Player p = team.getRoster()[i];
-                tendenciesSum += p.defensiveReboundingTendency;
+                tendenciesSum += p.getDefensiveReboundingTendency();
                 runningSum[i + 1] = tendenciesSum;
             }
         }

@@ -1,3 +1,16 @@
+package simulation;
+
+import model.Team;
+import model.Player;
+
+import result.PossessionResult;
+import result.FreeThrowResult;
+import result.ReboundResult;
+import result.ShotResult;
+import result.StealResult;
+
+import service.StatisticsService;
+
 import java.security.SecureRandom;
 
 public class PossessionEngine {
@@ -20,7 +33,7 @@ public class PossessionEngine {
         this.r = r;
     }
 
-    PossessionResult simulatePossession(Team offense, Team defense) {
+    public PossessionResult simulatePossession(Team offense, Team defense) {
         // Select random players for possession
         Player offensivePlayer = selectRandomPlayer(offense);
         Player defensivePlayer = selectRandomPlayer(defense);
@@ -54,13 +67,13 @@ public class PossessionEngine {
 
             if (freeThrows.isLastFreeThrowMissed()) {
                 ReboundResult reboundResult = reboundingEngine.attemptRebound(offense, defense);
-                if (reboundResult.defenseRebounded) {
-                    statisticsService.recordDefensiveRebound(reboundResult.rebounder);
+                if (reboundResult.isDefenseRebounded()) {
+                    statisticsService.recordDefensiveRebound(reboundResult.getRebounder());
                     outcome = PossessionResult.OutcomeType.DEFENSIVE_REBOUND;
                 }
 
-                else if (reboundResult.offenseRebounded) {
-                    statisticsService.recordOffensiveRebound(reboundResult.rebounder);
+                else if (reboundResult.isOffenseRebounded()) {
+                    statisticsService.recordOffensiveRebound(reboundResult.getRebounder());
                     outcome = PossessionResult.OutcomeType.OFFENSIVE_REBOUND;
                 }
 
@@ -78,13 +91,13 @@ public class PossessionEngine {
                 outcome = PossessionResult.OutcomeType.SHOT_MADE;
             } else {
                 ReboundResult reboundResult = reboundingEngine.attemptRebound(offense, defense);
-                if (reboundResult.defenseRebounded) {
-                    statisticsService.recordDefensiveRebound(reboundResult.rebounder);
+                if (reboundResult.isDefenseRebounded()) {
+                    statisticsService.recordDefensiveRebound(reboundResult.getRebounder());
                     outcome = PossessionResult.OutcomeType.DEFENSIVE_REBOUND;
                 }
 
-                else if (reboundResult.offenseRebounded) {
-                    statisticsService.recordOffensiveRebound(reboundResult.rebounder);
+                else if (reboundResult.isOffenseRebounded()) {
+                    statisticsService.recordOffensiveRebound(reboundResult.getRebounder());
                     outcome = PossessionResult.OutcomeType.OFFENSIVE_REBOUND;
                 }
 
@@ -97,7 +110,7 @@ public class PossessionEngine {
         }
     }
 
-    Player selectRandomPlayer(Team team) {
-        return team.roster[r.nextInt(0, team.roster.length)];
+    public Player selectRandomPlayer(Team team) {
+        return team.getRoster()[r.nextInt(0, team.getRoster().length)];
     }
 }
