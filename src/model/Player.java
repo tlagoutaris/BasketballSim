@@ -17,6 +17,7 @@ public class Player {
     int threePointOffense;
     int freeThrow;
     int ballControl;
+    int passing;
 
     // defense
     int twoPointDefense;
@@ -28,7 +29,10 @@ public class Player {
     // Tendencies
     double twoPointTendency;
     double threePointTendency;
-    double stealAttemptTendency;
+    double passTendency;
+    double stealAttemptTendency; // on-ball steal
+    double interceptionTendency;
+    double deflectionTendency;
     double foulTendency;
     double offensiveReboundingTendency;
     double defensiveReboundingTendency;
@@ -54,6 +58,7 @@ public class Player {
         this.threePointOffense = randomAttribute();
         this.freeThrow = randomAttribute();
         this.ballControl = randomAttribute();
+        this.passTendency = randomAttribute();
 
         // Defense
         this.twoPointDefense = randomAttribute();
@@ -67,9 +72,12 @@ public class Player {
         // Offense
         this.twoPointTendency = BoundedNormalDistribution.generateBoundedNormalDoubleInt(Config.BASE_TWO_POINT_ATTEMPT_TENDENCY, Config.BASE_TENDENCY_STDDEV, Config.LOWER_BOUND, Config.UPPER_BOUND);
         this.threePointTendency = 1 - this.twoPointTendency;
+        this.passTendency = BoundedNormalDistribution.generateBoundedNormalDoubleInt(Config.BASE_PASS_ATTEMPT_TENDENCY, Config.BASE_TENDENCY_STDDEV, Config.LOWER_BOUND, Config.UPPER_BOUND);
 
         // Defense
         this.stealAttemptTendency = BoundedNormalDistribution.generateBoundedNormalDoubleInt(Config.BASE_STEAL_ATTEMPT_TENDENCY, Config.BASE_TENDENCY_STDDEV, Config.LOWER_BOUND, Config.UPPER_BOUND);
+        this.interceptionTendency = BoundedNormalDistribution.generateBoundedNormalDoubleInt(Config.BASE_INTERCEPTION_TENDENCY, Config.BASE_TENDENCY_STDDEV, Config.LOWER_BOUND, Config.UPPER_BOUND);
+        this.deflectionTendency = BoundedNormalDistribution.generateBoundedNormalDoubleInt(Config.BASE_DEFLECTION_TENDENCY, Config.BASE_TENDENCY_STDDEV, Config.LOWER_BOUND, Config.UPPER_BOUND);
         this.foulTendency = BoundedNormalDistribution.generateBoundedNormalDoubleInt(Config.BASE_FOUL_TENDENCY, Config.BASE_TENDENCY_STDDEV, Config.LOWER_BOUND, Config.UPPER_BOUND);
         this.offensiveReboundingTendency = BoundedNormalDistribution.generateBoundedNormalDoubleInt(Config.BASE_OFFENSIVE_REBOUND_TENDENCY, Config.BASE_TENDENCY_STDDEV, Config.LOWER_BOUND, Config.UPPER_BOUND);
         this.defensiveReboundingTendency = BoundedNormalDistribution.generateBoundedNormalDoubleInt(Config.BASE_DEFENSIVE_REBOUND_TENDENCY, Config.BASE_TENDENCY_STDDEV, Config.LOWER_BOUND, Config.UPPER_BOUND);
@@ -108,6 +116,9 @@ public class Player {
     public int getBallControl() {
         return this.ballControl;
     }
+    public int getPassing() {
+        return this.passing;
+    }
 
     public int getTwoPointDefense() {
         return this.twoPointDefense;
@@ -129,9 +140,19 @@ public class Player {
     public double getThreePointTendency() {
         return this.threePointTendency;
     }
+    public double getPassTendency() {
+        return this.passTendency;
+    }
 
     public double getStealAttemptTendency() {
         return this.stealAttemptTendency;
+    }
+    public double getInterceptionTendency() {
+        return this.interceptionTendency;
+    }
+
+    public double getDeflectionTendency() {
+        return this.deflectionTendency;
     }
 
     public double getFoulTendency() {
@@ -160,6 +181,7 @@ public class Player {
                 "\n3PT Offense: " + this.threePointOffense +
                 "\nFree Throw: " + this.freeThrow +
                 "\nBall Control: " + this.ballControl +
+                "\nPassing: " + this.passing +
                 // Defense
                 "\n2PT Defense: " + this.twoPointDefense +
                 "\n3PT Defense: " + this.threePointDefense +

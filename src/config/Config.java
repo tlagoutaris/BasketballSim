@@ -18,11 +18,19 @@ public class Config {
     public static final double BASE_FOUL_SUCCESS_CHANCE = 40;
     public static final double BASE_STEAL_SUCCESS_CHANCE = 40;
     public static final double BASE_BALL_OUT_OF_BOUNDS_CHANCE = 2;
+    public static final double BASE_PASS_BALL_OUT_OF_BOUNDS_CHANCE = 3;
+    public static final double BASE_PASS_DEFLECTED_CHANCE = 4;
+    public static final double BASE_PASS_INTERCEPTED_CHANCE = 3;
+    public static final double BASE_AVERAGE_POSSESSIONS_PER_TEAM = 104;
+    public static final double BASE_AVERAGE_PASSES_PER_TEAM = 292;
 
     // Simulation tendencies
     public static final double BASE_TWO_POINT_ATTEMPT_TENDENCY = 60;
-    public static final double BASE_THREE_POINT_ATTEMPT_TENDENCY = 40;
+    public static final double BASE_THREE_POINT_ATTEMPT_TENDENCY = 100 - BASE_TWO_POINT_ATTEMPT_TENDENCY;
+    public static final double BASE_PASS_ATTEMPT_TENDENCY = (BASE_AVERAGE_PASSES_PER_TEAM / BASE_AVERAGE_POSSESSIONS_PER_TEAM) * 100;
     public static final double BASE_STEAL_ATTEMPT_TENDENCY = 18;
+    public static final double BASE_INTERCEPTION_TENDENCY = 4;
+    public static final double BASE_DEFLECTION_TENDENCY = 6;
     public static final double BASE_OFFENSIVE_REBOUND_TENDENCY = 26;
     public static final double BASE_DEFENSIVE_REBOUND_TENDENCY = 100 - BASE_OFFENSIVE_REBOUND_TENDENCY;
     public static final double BASE_FOUL_TENDENCY = 18;
