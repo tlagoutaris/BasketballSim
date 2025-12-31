@@ -11,9 +11,12 @@ public class PossessionResult {
         SHOOTING_FOUL,
         SHOT_MADE,
         SHOT_OUT_OF_BOUNDS,
+        PASS_OUT_OF_BOUNDS,
+        PASS_DEFLECTED_OUT_OF_BOUNDS,
         OFFENSIVE_REBOUND,
         DEFENSIVE_REBOUND,
-        TURNOVER
+        TURNOVER,
+        SHOT_CLOCK_VIOLATION
     }
 
     OutcomeType outcomeType;
@@ -22,12 +25,12 @@ public class PossessionResult {
     int pointsScored;
     double possessionLength;
 
-    public PossessionResult(OutcomeType outcomeType, Team offense, Team defense, int pointsScored) {
+    public PossessionResult(OutcomeType outcomeType, Team offense, Team defense, int pointsScored, double possessionLength) {
         this.outcomeType = outcomeType;
         this.offense = offense;
         this.defense = defense;
         this.pointsScored = pointsScored;
-        this.possessionLength = calculatePossessionLength();
+        this.possessionLength = possessionLength;
     }
 
     public double calculatePossessionLength() {
@@ -63,11 +66,14 @@ public class PossessionResult {
             case DEFENSIVE_REBOUND:
             case TURNOVER:
             case SHOT_OUT_OF_BOUNDS:
+            case PASS_OUT_OF_BOUNDS:
+            case SHOT_CLOCK_VIOLATION:
                 return true;
             // Outcome type which do not result in possession changes
             case NON_SHOOTING_FOUL:
             case SHOOTING_FOUL:
             case OFFENSIVE_REBOUND:
+            case PASS_DEFLECTED_OUT_OF_BOUNDS:
                 return false;
             default:
                 return true;

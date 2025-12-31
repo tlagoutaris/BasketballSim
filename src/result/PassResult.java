@@ -27,6 +27,14 @@ public class PassResult {
         return this.stolen;
     }
 
+    public boolean isDeflection() {
+        return !this.stolen && !this.successful && !this.turnover;
+    }
+
+    public boolean isThrownOutOfBounds() {
+        return !this.stolen && this.turnover;
+    }
+
     public boolean isTurnover() {
         return this.turnover;
     }

@@ -14,6 +14,8 @@ public class TeamStatistics {
     int twoPointMakesTotal;
     int threePointAttemptsTotal;
     int threePointMakesTotal;
+    int fieldGoalAttemptsTotal;
+    int fieldGoalMakesTotal;
     int freeThrowAttemptsTotal;
     int freeThrowMakesTotal;
     int turnoversTotal;
@@ -29,6 +31,8 @@ public class TeamStatistics {
     double twoPointMakesPerGame;
     double threePointAttemptsPerGame;
     double threePointMakesPerGame;
+    double fieldGoalAttemptsPerGame;
+    double fieldGoalMakesPerGame;
     double freeThrowAttemptsPerGame;
     double freeThrowMakesPerGame;
     double attemptsPerGame;
@@ -54,16 +58,20 @@ public class TeamStatistics {
 
     public void recordShotAttempt(ShotResult shot) {
         if (shot.getShotType().equals("2PT")) {
-            this.twoPointAttemptsTotal++;
             if (shot.isMade()) {
+                this.twoPointAttemptsTotal++;
                 this.twoPointMakesTotal++;
+            } else if (!shot.drewFoul() && !shot.isMade()) {
+                this.twoPointAttemptsTotal++;
             }
         }
 
         else if (shot.getShotType().equals("3PT")) {
-            this.threePointAttemptsTotal++;
             if (shot.isMade()) {
+                this.threePointAttemptsTotal++;
                 this.threePointMakesTotal++;
+            } else if (!shot.drewFoul() && !shot.isMade()) {
+                this.threePointAttemptsTotal++;
             }
         }
 
@@ -122,6 +130,8 @@ public class TeamStatistics {
         this.twoPointMakesPerGame = (double) twoPointMakesTotal / gamesTotal;
         this.threePointAttemptsPerGame = (double) threePointAttemptsTotal / gamesTotal;
         this.threePointMakesPerGame = (double) threePointMakesTotal / gamesTotal;
+        this.fieldGoalMakesPerGame = (double) (twoPointMakesTotal + threePointMakesTotal) / gamesTotal;
+        this.fieldGoalAttemptsPerGame = (double) (twoPointAttemptsTotal + threePointAttemptsTotal) / gamesTotal;
         this.freeThrowAttemptsPerGame = (double) freeThrowAttemptsTotal / gamesTotal;
         this.freeThrowMakesPerGame = (double) freeThrowMakesTotal / gamesTotal;
         this.attemptsPerGame = twoPointAttemptsPerGame + threePointAttemptsPerGame;
@@ -140,6 +150,8 @@ public class TeamStatistics {
         this.twoPointMakesTotal = 0;
         this.threePointAttemptsTotal = 0;
         this.threePointMakesTotal = 0;
+        this.fieldGoalAttemptsTotal = 0;
+        this.fieldGoalMakesTotal = 0;
         this.freeThrowAttemptsTotal = 0;
         this.freeThrowMakesTotal = 0;
         this.turnoversTotal = 0;
@@ -160,6 +172,8 @@ public class TeamStatistics {
         this.twoPointMakesPerGame = 0.0;
         this.threePointAttemptsPerGame = 0.0;
         this.threePointMakesPerGame = 0.0;
+        this.fieldGoalAttemptsPerGame = 0.0;
+        this.fieldGoalMakesPerGame = 0.0;
         this.freeThrowAttemptsPerGame = 0.0;
         this.freeThrowMakesPerGame = 0.0;
         this.attemptsPerGame = 0.0;
@@ -179,7 +193,7 @@ public class TeamStatistics {
 
         System.out.println("\n" + this.team.getFullName() + " statistics: ");
         System.out.printf(
-                "\nPTS/g: %.2f\nREB/g: %.2f\nOREB/g: %.2f\nTOV/g: %.2f\nSTL/g: %.2f\nFouls/g: %.2f\nFG%%: %.2f\n3P%%: %.2f\nFT%%: %.2f\nWins: %d\nLosses: %d\n",
+                "\nPTS/g: %.2f\nREB/g: %.2f\nOREB/g: %.2f\nTOV/g: %.2f\nSTL/g: %.2f\nFouls/g: %.2f\nFG%%: %.2f\n3P%%: %.2f\nFT%%: %.2f\nFGM/g: %.2f\nFGA/g: %.2f\n2PM/g: %.2f\n2PA/g: %.2f\n3PM/g: %.2f\n3PA/g: %.2f\nFTM/g: %.2f\nFTA/g: %.2f\nWins: %d\nLosses: %d\n",
                 pointsPerGame,
                 reboundsPerGame,
                 offensiveReboundsPerGame,
@@ -189,6 +203,14 @@ public class TeamStatistics {
                 (makesPerGame / attemptsPerGame) * 100,
                 (threePointMakesPerGame / threePointAttemptsPerGame) * 100,
                 (freeThrowMakesPerGame / freeThrowAttemptsPerGame) * 100,
+                fieldGoalMakesPerGame,
+                fieldGoalAttemptsPerGame,
+                twoPointMakesPerGame,
+                twoPointAttemptsPerGame,
+                threePointMakesPerGame,
+                threePointAttemptsPerGame,
+                freeThrowMakesPerGame,
+                freeThrowAttemptsPerGame,
                 winsTotal,
                 lossesTotal
         );

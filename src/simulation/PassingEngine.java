@@ -5,10 +5,12 @@ import model.Player;
 import model.Team;
 import result.PassResult;
 import java.security.SecureRandom;
+import java.util.Arrays;
 
 public class PassingEngine {
 
     private final SecureRandom r;
+    private final double[] runningSum = new double[6];
 
     public PassingEngine(SecureRandom r) {
         this.r = r;
@@ -73,51 +75,55 @@ public class PassingEngine {
 
     public Player determineInterceptor(Team team) {
         // Add up all of their tendencies
-        double[] runningSum = new double[team.getRoster().length + 1];
-        runningSum[0] = 0;
+        this.runningSum[0] = 0;
 
         double tendenciesSum = 0;
         for (int i = 0; i < team.getRoster().length; i++) {
             Player p = team.getRoster()[i];
             tendenciesSum += p.getInterceptionTendency(); // intercepting tendency
-            runningSum[i + 1] = tendenciesSum;
+            this.runningSum[i + 1] = tendenciesSum;
         }
 
         // then do a lottery to find who will be the interceptor
         double pingPongBall = r.nextDouble(0, tendenciesSum);
         Player interceptor = team.getRoster()[0];
-        for (int i = 0; i < runningSum.length - 1; i++) {
-            if (pingPongBall >= runningSum[i] && pingPongBall <= runningSum[i + 1]) {
+        for (int i = 0; i < this.runningSum.length - 1; i++) {
+            if (pingPongBall >= this.runningSum[i] && pingPongBall <= this.runningSum[i + 1]) {
                 interceptor = team.getRoster()[i];
                 break;
             }
         }
 
+        //resetRunningSum();
         return interceptor;
     }
 
     public Player determineDeflector(Team team) {
         // Add up all of their tendencies
-        double[] runningSum = new double[team.getRoster().length + 1];
-        runningSum[0] = 0;
+        this.runningSum[0] = 0;
 
         double tendenciesSum = 0;
         for (int i = 0; i < team.getRoster().length; i++) {
             Player p = team.getRoster()[i];
             tendenciesSum += p.getDeflectionTendency(); // deflection tendency
-            runningSum[i + 1] = tendenciesSum;
+            this.runningSum[i + 1] = tendenciesSum;
         }
 
         // then do a lottery to find who will be the interceptor
         double pingPongBall = r.nextDouble(0, tendenciesSum);
         Player deflector = team.getRoster()[0];
-        for (int i = 0; i < runningSum.length - 1; i++) {
-            if (pingPongBall >= runningSum[i] && pingPongBall <= runningSum[i + 1]) {
+        for (int i = 0; i < this.runningSum.length - 1; i++) {
+            if (pingPongBall >= this.runningSum[i] && pingPongBall <= this.runningSum[i + 1]) {
                 deflector = team.getRoster()[i];
                 break;
             }
         }
 
+        //resetRunningSum();
         return deflector;
+    }
+
+    void resetRunningSum() {
+        Arrays.fill(this.runningSum, 0);
     }
 }

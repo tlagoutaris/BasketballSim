@@ -3,7 +3,6 @@ package model;
 import simulation.PossessionEngine;
 import result.PossessionResult;
 import config.Config;
-
 import java.security.SecureRandom;
 
 public class Game {
@@ -53,7 +52,6 @@ public class Game {
     }
 
     public void simulateGame() {
-
         // Simulate regulation periods
         for (int period = 1; period <= Config.NUM_PERIODS; period++) {
             this.currentPeriod = period;
@@ -76,7 +74,7 @@ public class Game {
 
         while (periodTimeLeft > 0) {
             // Simulate one possession
-            PossessionResult result = possessionEngine.simulatePossession(currentOffense, currentDefense);
+            PossessionResult result = possessionEngine.simulatePossession(currentOffense, currentDefense, Config.NUM_SECONDS_POSSESSION, periodTimeLeft);
 
             // Update game based on possession result
             this.updateScore(result);

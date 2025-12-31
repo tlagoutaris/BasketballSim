@@ -21,13 +21,19 @@ public class Config {
     public static final double BASE_PASS_BALL_OUT_OF_BOUNDS_CHANCE = 3;
     public static final double BASE_PASS_DEFLECTED_CHANCE = 4;
     public static final double BASE_PASS_INTERCEPTED_CHANCE = 3;
-    public static final double BASE_AVERAGE_POSSESSIONS_PER_TEAM = 104;
+    public static final double BASE_AVERAGE_SHOTS_PER_TEAM = 89.4;
     public static final double BASE_AVERAGE_PASSES_PER_TEAM = 292;
+    public static final double BASE_AVERAGE_POSSESSIONS_PER_TEAM = 104;
+    public static final double BASE_TIME_NEEDED_TO_SHOOT = 0.4;
+    public static final double BASE_POSSESSION_ABORTING_SHOT = 2.0;
+    public static final double BASE_MOMENTS_PER_POSSESSION = (BASE_AVERAGE_PASSES_PER_TEAM + BASE_AVERAGE_SHOTS_PER_TEAM/ BASE_AVERAGE_POSSESSIONS_PER_TEAM);
 
     // Simulation tendencies
     public static final double BASE_TWO_POINT_ATTEMPT_TENDENCY = 60;
     public static final double BASE_THREE_POINT_ATTEMPT_TENDENCY = 100 - BASE_TWO_POINT_ATTEMPT_TENDENCY;
-    public static final double BASE_PASS_ATTEMPT_TENDENCY = (BASE_AVERAGE_PASSES_PER_TEAM / BASE_AVERAGE_POSSESSIONS_PER_TEAM) * 100;
+    public static final double BASE_PASS_ATTEMPT_TENDENCY = (BASE_AVERAGE_PASSES_PER_TEAM / BASE_AVERAGE_POSSESSIONS_PER_TEAM) * 10;
+    public static final double BASE_SHOT_ATTEMPT_TENDENCY = (BASE_PASS_ATTEMPT_TENDENCY / 2);
+    public static final double BASE_DRIBBLE_TENDENCY = BASE_SHOT_ATTEMPT_TENDENCY;
     public static final double BASE_STEAL_ATTEMPT_TENDENCY = 18;
     public static final double BASE_INTERCEPTION_TENDENCY = 4;
     public static final double BASE_DEFLECTION_TENDENCY = 6;
@@ -39,6 +45,7 @@ public class Config {
     public static final double BASE_ATTRIBUTE_MEAN = 50;
     public static final double BASE_ATTRIBUTE_STDDEV = 16;
     public static final double BASE_TENDENCY_STDDEV = 10;
+    public static final double BASE_MOMENT_LENGTH_STDDEV = 3;
 
     // Normal distribution parameters
     public static final double LOWER_BOUND = 0.0;
@@ -46,4 +53,7 @@ public class Config {
 
     // Multipliers
     public static final double ATTRIBUTE_DIFFERENCE_MULTIPLIER = 0.5;
+
+    // NBA Rules
+    public static final double SHOT_CLOCK_RESET_ON_OFFENSIVE_REBOUND = 14.0;
 }

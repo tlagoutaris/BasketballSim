@@ -29,7 +29,9 @@ public class Player {
     // Tendencies
     double twoPointTendency;
     double threePointTendency;
+    double shotTendency;
     double passTendency;
+    double dribbleTendency;
     double stealAttemptTendency; // on-ball steal
     double interceptionTendency;
     double deflectionTendency;
@@ -58,7 +60,7 @@ public class Player {
         this.threePointOffense = randomAttribute();
         this.freeThrow = randomAttribute();
         this.ballControl = randomAttribute();
-        this.passTendency = randomAttribute();
+        this.passing = randomAttribute();
 
         // Defense
         this.twoPointDefense = randomAttribute();
@@ -73,6 +75,8 @@ public class Player {
         this.twoPointTendency = BoundedNormalDistribution.generateBoundedNormalDoubleInt(Config.BASE_TWO_POINT_ATTEMPT_TENDENCY, Config.BASE_TENDENCY_STDDEV, Config.LOWER_BOUND, Config.UPPER_BOUND);
         this.threePointTendency = 1 - this.twoPointTendency;
         this.passTendency = BoundedNormalDistribution.generateBoundedNormalDoubleInt(Config.BASE_PASS_ATTEMPT_TENDENCY, Config.BASE_TENDENCY_STDDEV, Config.LOWER_BOUND, Config.UPPER_BOUND);
+        this.shotTendency = BoundedNormalDistribution.generateBoundedNormalDoubleInt(Config.BASE_SHOT_ATTEMPT_TENDENCY, Config.BASE_TENDENCY_STDDEV, Config.LOWER_BOUND, Config.UPPER_BOUND);
+        this.dribbleTendency = BoundedNormalDistribution.generateBoundedNormalDoubleInt(Config.BASE_DRIBBLE_TENDENCY, Config.BASE_TENDENCY_STDDEV, Config.LOWER_BOUND, Config.UPPER_BOUND);
 
         // Defense
         this.stealAttemptTendency = BoundedNormalDistribution.generateBoundedNormalDoubleInt(Config.BASE_STEAL_ATTEMPT_TENDENCY, Config.BASE_TENDENCY_STDDEV, Config.LOWER_BOUND, Config.UPPER_BOUND);
@@ -140,8 +144,14 @@ public class Player {
     public double getThreePointTendency() {
         return this.threePointTendency;
     }
+    public double getShotTendency() {
+        return this.shotTendency;
+    }
     public double getPassTendency() {
         return this.passTendency;
+    }
+    public double getDribbleTendency() {
+        return this.dribbleTendency;
     }
 
     public double getStealAttemptTendency() {

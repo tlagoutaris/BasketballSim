@@ -77,7 +77,6 @@ public class ShootingEngine {
                 }
 
             } else {
-
                 // Check for foul
                 foulChance = r.nextDouble(Config.LOWER_BOUND, Config.UPPER_BOUND);
                 if (foulChance <= defender.getFoulTendency()) {
