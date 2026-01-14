@@ -1,9 +1,10 @@
 package simulation;
 
 import config.Config;
+import result.TimeStamp;
 import util.BoundedNormalDistribution;
 import model.Player;
-import result.StealResult;
+import result.StealEvent;
 import java.security.SecureRandom;
 
 public class StealEngine {
@@ -13,7 +14,7 @@ public class StealEngine {
         this.r = r;
     }
 
-    public StealResult attemptSteal(Player defender, Player playerWithBall) {
+    public StealEvent attemptSteal(Player defender, Player playerWithBall, TimeStamp timeStamp) {
         boolean stolen = false;
         boolean foul = false;
 
@@ -39,6 +40,6 @@ public class StealEngine {
 
         }
 
-        return new StealResult(stolen, foul, defender.getCurrentTeam());
+        return new StealEvent(stolen, foul, defender.getCurrentTeam(), defender, timeStamp);
     }
 }

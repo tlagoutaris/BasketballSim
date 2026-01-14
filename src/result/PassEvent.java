@@ -1,21 +1,26 @@
 package result;
 
 import model.Player;
-import model.Team;
+import simulation.PossessionEngine;
 
-public class PassResult {
+import java.sql.Time;
+
+public class PassEvent implements GameEvent {
     boolean successful;
     boolean stolen;
     boolean turnover;
     Player passer;
     Player recipient;
+    TimeStamp timeStamp;
+    PossessionEngine.OutcomeType outcomeType = null;
 
-    public PassResult(boolean successful, boolean stolen, boolean turnover, Player passer, Player recipient) {
+    public PassEvent(boolean successful, boolean stolen, boolean turnover, Player passer, Player recipient, TimeStamp timeStamp) {
         this.successful = successful;
         this.stolen = stolen;
         this.turnover = turnover;
         this.passer = passer;
         this.recipient = recipient;
+        this.timeStamp = timeStamp;
     }
 
     // Getters
@@ -45,5 +50,18 @@ public class PassResult {
 
     public Player getRecipient() {
         return this.recipient;
+    }
+
+    public TimeStamp getTimeStamp() {
+        return timeStamp;
+    }
+
+    @Override
+    public PossessionEngine.OutcomeType getOutcomeType() {
+        return this.outcomeType;
+    }
+
+    public void setOutcomeType(PossessionEngine.OutcomeType outcomeType) {
+        this.outcomeType = outcomeType;
     }
 }

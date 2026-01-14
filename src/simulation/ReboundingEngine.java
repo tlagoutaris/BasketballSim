@@ -1,10 +1,11 @@
 package simulation;
 
 import config.Config;
+import result.TimeStamp;
 import util.BoundedNormalDistribution;
 import model.Team;
 import model.Player;
-import result.ReboundResult;
+import result.ReboundEvent;
 import java.security.SecureRandom;
 
 public class ReboundingEngine {
@@ -14,7 +15,7 @@ public class ReboundingEngine {
         this.r = r;
     }
 
-    public ReboundResult attemptRebound(Team offensiveTeam, Team defensiveTeam) {
+    public ReboundEvent attemptRebound(Team offensiveTeam, Team defensiveTeam, TimeStamp timeStamp) {
         boolean offenseRebounded = false;
         boolean defenseRebounded = false;
         boolean hasFoul = false;
@@ -59,7 +60,7 @@ public class ReboundingEngine {
             }
         }
 
-        return new ReboundResult(offenseRebounded, defenseRebounded, hasFoul, rebounder);
+        return new ReboundEvent(offenseRebounded, defenseRebounded, hasFoul, rebounder, timeStamp);
     }
 
     public Player determineRebounder(Team team, boolean onOffense) {

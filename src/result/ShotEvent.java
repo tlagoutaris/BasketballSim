@@ -1,8 +1,11 @@
 package result;
 
+import model.Player;
 import model.Team;
+import simulation.PossessionEngine;
 
-public class ShotResult {
+public class ShotEvent implements GameEvent {
+    Player shooter;
     String shotType; // 2PT, 3PT
     boolean isMade;
     int points;
@@ -10,8 +13,11 @@ public class ShotResult {
     Team offensiveTeam;
     Team defendingTeam;
     int numFreeThrows;
+    TimeStamp timeStamp;
+    PossessionEngine.OutcomeType outcomeType = null;
 
-    public ShotResult(String shotType, boolean isMade, int points, boolean drewFoul, Team offensiveTeam, Team defendingTeam, int numFreeThrows) {
+    public ShotEvent(Player shooter, String shotType, boolean isMade, int points, boolean drewFoul, Team offensiveTeam, Team defendingTeam, int numFreeThrows, TimeStamp timeStamp) {
+        this.shooter = shooter;
         this.shotType = shotType;
         this.isMade = isMade;
         this.points = points;
@@ -19,6 +25,11 @@ public class ShotResult {
         this.offensiveTeam = offensiveTeam;
         this.defendingTeam = defendingTeam;
         this.numFreeThrows = numFreeThrows;
+        this.timeStamp = timeStamp;
+    }
+
+    public Player getShooter() {
+        return this.shooter;
     }
 
     public String getShotType() {
@@ -47,5 +58,18 @@ public class ShotResult {
 
     public int freeThrowsAwarded() {
         return this.numFreeThrows;
+    }
+
+    public TimeStamp getTimeStamp() {
+        return timeStamp;
+    }
+
+    @Override
+    public PossessionEngine.OutcomeType getOutcomeType() {
+        return this.outcomeType;
+    }
+
+    public void setOutcomeType(PossessionEngine.OutcomeType outcomeType) {
+        this.outcomeType = outcomeType;
     }
 }

@@ -1,38 +1,38 @@
 package model;
 
+import service.StatisticsService;
 import simulation.PossessionEngine;
-import result.PossessionResult;
 import config.Config;
 import java.security.SecureRandom;
+import result.*;
+import java.util.ArrayList;
 
 public class Game {
     SecureRandom r;
-    PossessionEngine possessionEngine;
+    PossessionEngine possessionEngine = new PossessionEngine();
+    StatisticsService statistics = new StatisticsService();
 
     // model.Game state
     Team homeTeam;
     Team awayTeam;
     Team currentOffense;
     Team currentDefense;
-    int homeScore;
-    int awayScore;
+    BoxScore boxScore = new BoxScore(homeTeam, awayTeam);
     int overtimes;
     int currentPeriod;
     boolean inOvertime;
 
     // Constants
 
-    public Game(Team homeTeam, Team awayTeam, PossessionEngine possessionEngine) {
+    public Game(Team homeTeam, Team awayTeam) {
         this.homeTeam = homeTeam;
         this.awayTeam = awayTeam;
-        this.possessionEngine = possessionEngine;
         this.r = new SecureRandom();
         this.initializeGame();
     }
 
     public void initializeGame() {
-        this.homeScore = 0;
-        this.awayScore = 0;
+        this.boxScore = new BoxScore(homeTeam, awayTeam);
         this.currentPeriod = 1;
         this.inOvertime = false;
         this.overtimes = 0;
@@ -53,45 +53,41 @@ public class Game {
 
     public void simulateGame() {
         // Simulate regulation periods
-        for (int period = 1; period <= Config.NUM_PERIODS; period++) {
+        int period;
+        for (period = 1; period <= Config.NUM_PERIODS; period++) {
             this.currentPeriod = period;
-            simulatePeriod(Config.REGULATION_PERIOD_LENGTH_SECONDS);
+            simulatePeriod(Config.REGULATION_PERIOD_LENGTH_SECONDS, this.currentPeriod);
         }
 
         // Check for overtime
-        while (homeScore == awayScore) {
+        while (boxScore.getHomeScore() == boxScore.getAwayScore()) {
             this.inOvertime = true;
             this.currentPeriod++;
             this.overtimes++;
-            this.simulatePeriod(Config.OVERTIME_PERIOD_LENGTH_SECONDS);
+            this.simulatePeriod(Config.OVERTIME_PERIOD_LENGTH_SECONDS, this.currentPeriod);
         }
 
         this.determineWinner();
     }
 
-    public void simulatePeriod(double periodLength) {
+    public void simulatePeriod(double periodLength, int currentPeriod) {
         double periodTimeLeft = periodLength;
 
         while (periodTimeLeft > 0) {
             // Simulate one possession
-            PossessionResult result = possessionEngine.simulatePossession(currentOffense, currentDefense, Config.NUM_SECONDS_POSSESSION, periodTimeLeft);
+            ArrayList<GameEvent> events = possessionEngine.simulatePossession(currentOffense, currentDefense, currentPeriod, periodTimeLeft);
 
             // Update game based on possession result
-            this.updateScore(result);
-            periodTimeLeft -= result.getPossessionLength();
+            periodTimeLeft -= possessionEngine.calculatePossessionLength(events);
 
-            if (result.doesPossessionChange()) {
+            System.out.println("-- POSSESSION ENDED --");
+
+            // Update scores
+            statistics.handle(events, this.boxScore);
+
+            if (possessionEngine.doesPossessionChange(events.getLast().getOutcomeType())) {
                 this.swapPossession();
             }
-        }
-    }
-
-    public void updateScore(PossessionResult result) {
-        int points = result.getPointsScored();
-        if (result.getOffense() == this.homeTeam) {
-            this.homeScore += points;
-        } else {
-            this.awayScore += points;
         }
     }
 
@@ -107,7 +103,7 @@ public class Game {
         homeTeam.getStatistics().recordGamePlayed();
         awayTeam.getStatistics().recordGamePlayed();
 
-        if (this.homeScore > this.awayScore) {
+        if (boxScore.getHomeScore() > boxScore.getAwayScore()) {
             homeTeam.getStatistics().winsTotal++;
             awayTeam.getStatistics().lossesTotal++;
         }
@@ -122,20 +118,12 @@ public class Game {
         return this.overtimes;
     }
 
-    public int getHomeScore() {
-        return this.homeScore;
-    }
-
-    public int getAwayScore() {
-        return this.awayScore;
-    }
-
     public void printScore() {
         if (this.overtimes > 0) {
-            System.out.println("FINAL/"+this.overtimes+"OT" + "\n" + this.homeTeam.getFullName() + ": " + this.getHomeScore() + "\n" + this.awayTeam.getFullName() + ": " + this.getAwayScore());
+            System.out.println("FINAL/"+this.overtimes+"OT" + "\n" + this.homeTeam.getFullName() + ": " + this.boxScore.getHomeScore() + "\n" + this.awayTeam.getFullName() + ": " + this.boxScore.getAwayScore());
             System.out.println();
         } else {
-            System.out.println(this.homeTeam.getFullName() + ": " + this.getHomeScore() + "\n" + this.awayTeam.getFullName() + ": " + this.getAwayScore());
+            System.out.println(this.homeTeam.getFullName() + ": " + this.boxScore.getHomeScore() + "\n" + this.awayTeam.getFullName() + ": " + this.boxScore.getAwayScore());
             System.out.println();
         }
     }

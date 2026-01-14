@@ -1,7 +1,9 @@
 package simulation;
 
 import model.Player;
-import result.ActionResult;
+import result.ActionEvent;
+import result.TimeStamp;
+
 import java.security.SecureRandom;
 
 public class ActionDecisionEngine {
@@ -11,7 +13,7 @@ public class ActionDecisionEngine {
         this.r = r;
     }
 
-    public ActionResult determineAction(Player player) {
+    public ActionEvent determineAction(Player player, TimeStamp timeStamp) {
         String action = "Dribble";
         // Use the player's tendencies to decide their action
         double tendenciesSum = player.getPassTendency() + player.getShotTendency() + player.getDribbleTendency();
@@ -29,6 +31,6 @@ public class ActionDecisionEngine {
         }
 
         // return string
-        return new ActionResult(action);
+        return new ActionEvent(action);
     }
 }

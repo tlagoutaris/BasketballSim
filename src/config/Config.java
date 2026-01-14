@@ -17,8 +17,8 @@ public class Config {
     public static final double BASE_AVERAGE_POSSESSION_STDDEV = 5.0;
     public static final double BASE_FOUL_SUCCESS_CHANCE = 40;
     public static final double BASE_STEAL_SUCCESS_CHANCE = 40;
-    public static final double BASE_BALL_OUT_OF_BOUNDS_CHANCE = 2;
-    public static final double BASE_PASS_BALL_OUT_OF_BOUNDS_CHANCE = 3;
+    public static final double BASE_BALL_OUT_OF_BOUNDS_CHANCE = 0.5;
+    public static final double BASE_PASS_BALL_OUT_OF_BOUNDS_CHANCE = 1;
     public static final double BASE_PASS_DEFLECTED_CHANCE = 4;
     public static final double BASE_PASS_INTERCEPTED_CHANCE = 3;
     public static final double BASE_AVERAGE_SHOTS_PER_TEAM = 89.4;
@@ -56,4 +56,5 @@ public class Config {
 
     // NBA Rules
     public static final double SHOT_CLOCK_RESET_ON_OFFENSIVE_REBOUND = 14.0;
+    public static final double SHOT_CLOCK_RESET_ON_FOUL = 14.0;
 }

@@ -1,9 +1,9 @@
 package model;
 
-import model.Player;
-import result.FreeThrowResult;
-import result.ShotResult;
-import result.StealResult;
+import result.FoulEvent;
+import result.FreeThrowEvent;
+import result.ShotEvent;
+import result.StealEvent;
 
 public class PlayerStatistics {
     Player player;
@@ -48,7 +48,7 @@ public class PlayerStatistics {
         initializeAverages();
     }
 
-    public void recordShotAttempt(ShotResult shot) {
+    public void recordShotAttempt(ShotEvent shot) {
         if (shot.getShotType().equals("2PT")) {
             if (shot.isMade()) {
                 this.twoPointAttemptsTotal++;
@@ -70,28 +70,20 @@ public class PlayerStatistics {
         this.pointsTotal += shot.getPoints();
     }
 
-    public void recordFreeThrowAttempt(FreeThrowResult freeThrow) {
+    public void recordFreeThrowAttempt(FreeThrowEvent freeThrow) {
         this.freeThrowAttemptsTotal += freeThrow.getFreeThrowAttempts();
         this.freeThrowMakesTotal += freeThrow.getFreeThrowsMade();
         this.pointsTotal += freeThrow.getFreeThrowsMade();
     }
 
-    public void recordStealAttempt(StealResult stealAttempt) {
+    public void recordStealAttempt(StealEvent stealAttempt) {
         if (stealAttempt.stolen()) {
             this.stealsTotal++;
         }
     }
 
-    public void recordFoul(ShotResult shot) {
-        if (shot.drewFoul()) {
-            this.foulsTotal++;
-        }
-    }
-
-    public void recordFoul(StealResult shot) {
-        if (shot.hasFoul()) {
-            this.foulsTotal++;
-        }
+    public void recordFoul() {
+        this.foulsTotal++;
     }
 
     public void recordRebound() {

@@ -1,10 +1,11 @@
 package simulation;
 
 import config.Config;
+import result.TimeStamp;
 import util.BoundedNormalDistribution;
 import model.Player;
-import result.FreeThrowResult;
-import result.ShotResult;
+import result.FreeThrowEvent;
+import result.ShotEvent;
 import java.security.SecureRandom;
 
 public class ShootingEngine {
@@ -14,7 +15,7 @@ public class ShootingEngine {
         this.r = r;
     }
 
-    public ShotResult attemptShot(Player shooter, Player defender) {
+    public ShotEvent attemptShot(Player shooter, Player defender, TimeStamp timeStamp) {
         String shotType; // 2PT, 3PT
         boolean made = false;
         int points = 0;
@@ -89,10 +90,10 @@ public class ShootingEngine {
         }
 
         // String shotType, boolean isMade, int points, boolean drewFoul, model.Team offensiveTeam, model.Team defendingTeam
-        return new ShotResult(shotType, made, points, drewFoul, shooter.getCurrentTeam(), defender.getCurrentTeam(), numFreeThrows);
+        return new ShotEvent(shooter, shotType, made, points, drewFoul, shooter.getCurrentTeam(), defender.getCurrentTeam(), numFreeThrows, timeStamp);
     }
 
-    public FreeThrowResult attemptFreeThrows(Player shooter, int freeThrowAttempts) {
+    public FreeThrowEvent attemptFreeThrows(Player shooter, int freeThrowAttempts, TimeStamp timeStamp) {
         int points = 0;
         boolean lastFreeThrowMissed = false;
 
@@ -112,6 +113,6 @@ public class ShootingEngine {
             lastFreeThrowMissed = true;
         }
 
-        return new FreeThrowResult(freeThrowAttempts, points, lastFreeThrowMissed);
+        return new FreeThrowEvent(shooter, freeThrowAttempts, points, lastFreeThrowMissed, timeStamp);
     }
 }

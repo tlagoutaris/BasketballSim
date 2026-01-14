@@ -4,182 +4,213 @@ import config.Config;
 import model.Team;
 import model.Player;
 
-import result.PossessionResult;
-import result.FreeThrowResult;
-import result.ReboundResult;
-import result.ShotResult;
-import result.StealResult;
-import result.PassResult;
-import result.ActionResult;
+import result.*;
 
 import service.StatisticsService;
 import util.BoundedNormalDistribution;
-import util.Trace;
+import java.util.ArrayList;
 
-import javax.swing.*;
 import java.security.SecureRandom;
 
 public class PossessionEngine {
-    ActionDecisionEngine actionDecisionEngine;
-    ShootingEngine shootingEngine;
-    PassingEngine passingEngine;
-    StealEngine stealEngine;
-    ReboundingEngine reboundingEngine;
-    StatisticsService statisticsService;
-    SecureRandom r;
 
-    public PossessionEngine(ActionDecisionEngine actionDecisionEngine, ShootingEngine shootingEngine, PassingEngine passingEngine, ReboundingEngine reboundingEngine, StealEngine stealEngine, StatisticsService statisticsService, SecureRandom r) {
-        // Engines
-        this.actionDecisionEngine = actionDecisionEngine;
-        this.shootingEngine = shootingEngine;
-        this.passingEngine = passingEngine;
-        this.reboundingEngine = reboundingEngine;
-        this.stealEngine = stealEngine;
-
-        // Statistics
-        this.statisticsService = statisticsService;
-
-        // Tools
-        this.r = r;
+    public enum OutcomeType {
+        STEAL,
+        NON_SHOOTING_FOUL,
+        SHOOTING_FOUL,
+        SHOT_MADE,
+        SHOT_MISSED,
+        FREE_THROW_SHOT_MADE,
+        SHOT_OUT_OF_BOUNDS,
+        SUCCESSFUL_PASS,
+        PASS_OUT_OF_BOUNDS,
+        PASS_DEFLECTED_OUT_OF_BOUNDS,
+        OFFENSIVE_REBOUND,
+        DEFENSIVE_REBOUND,
+        TURNOVER,
+        SHOT_CLOCK_VIOLATION
     }
 
-    public PossessionResult simulatePossession(Team offense, Team defense, double shotClock, double periodLengthRemaining) {
+    // Engines
+    SecureRandom r = new SecureRandom();
+    ActionDecisionEngine actionDecisionEngine = new ActionDecisionEngine(r);
+    ShootingEngine shootingEngine = new ShootingEngine(r);
+    PassingEngine passingEngine = new PassingEngine(r);
+    StealEngine stealEngine = new StealEngine(r);
+    ReboundingEngine reboundingEngine = new ReboundingEngine(r);
+
+    // Possession trackers
+    int currentEvent = 0;
+    int numEvents = 0;
+    double shotClock = Config.NUM_SECONDS_POSSESSION;
+
+    public PossessionEngine() {
+
+    }
+
+    public ArrayList<GameEvent> simulatePossession(Team offense, Team defense, int period, double periodLengthRemaining) {
+        ArrayList<GameEvent> events = new ArrayList<>();
 
         if (periodLengthRemaining < Config.NUM_SECONDS_POSSESSION) {
             shotClock = periodLengthRemaining;
         }
 
-        int moments = numberOfMoments(offense);
+        this.numEvents = numberOfEvents(offense);
 
         // inbound the ball
         Player inbounder = selectRandomPlayer(offense);
 
-        PassResult inboundPass = passingEngine.attemptPass(inbounder, defense);
+        PassEvent inboundPass = passingEngine.attemptPass(inbounder, defense, new TimeStamp(period, periodLengthRemaining, shotClock));
         // Check if still retained possession
         if (!inboundPass.isSuccessful()) {
             if (inboundPass.isStolen()) {
-                statisticsService.recordTurnover(inbounder);
-                statisticsService.recordSteal(inboundPass.getRecipient(), new StealResult(true, false, defense));
-                return new PossessionResult(PossessionResult.OutcomeType.STEAL, offense, defense, 0, 0);
+                StealEvent steal = new StealEvent(true, false, defense, inboundPass.getRecipient(), new TimeStamp(period, periodLengthRemaining, shotClock));
+                steal.setOutcomeType(OutcomeType.STEAL);
+                events.add(steal);
+                return events;
             } else if (inboundPass.isDeflection()) {
+                inboundPass.setOutcomeType(OutcomeType.PASS_DEFLECTED_OUT_OF_BOUNDS);
                 // it should not technically be a possession change, but it should be inbounded again
-                return new PossessionResult(PossessionResult.OutcomeType.PASS_DEFLECTED_OUT_OF_BOUNDS, offense, defense, 0, 0);
             } else if (inboundPass.isThrownOutOfBounds()) {
-                statisticsService.recordTurnover(inbounder);
-                return new PossessionResult(PossessionResult.OutcomeType.PASS_OUT_OF_BOUNDS, offense, defense, 0, 0);
+                inboundPass.setOutcomeType(OutcomeType.PASS_OUT_OF_BOUNDS);
+                events.add(inboundPass);
+
+                TurnoverEvent turnover = new TurnoverEvent(inbounder, "Thrown out of bounds", new TimeStamp(period, periodLengthRemaining, shotClock));
+                turnover.setOutcomeType(OutcomeType.TURNOVER);
+                events.add(turnover);
+                return events;
             }
         }
 
-        Player lastPasser = inboundPass.getPasser();
         Player playerWithBall = inboundPass.getRecipient();
-        PossessionResult.OutcomeType outcome = PossessionResult.OutcomeType.SHOT_CLOCK_VIOLATION;
-        for (int i = 0; i < moments; i++) {
+        for (this.currentEvent = 0; this.currentEvent < this.numEvents; this.currentEvent++) {
             // Check if it is the last moment or <2 seconds; if so, just shoot
-            if (shotClock <= 2 || i == moments - 1) {
+            if (shotClock <= 2 || this.currentEvent == this.numEvents - 1) {
                 Player defensivePlayer = selectRandomPlayer(defense);
 
                 // Attempts a shot
-                ShotResult shotResult = shootingEngine.attemptShot(playerWithBall, defensivePlayer);
+                ShotEvent shotEvent = shootingEngine.attemptShot(playerWithBall, defensivePlayer, new TimeStamp(period, periodLengthRemaining, shotClock));
 
-                if (shotResult.drewFoul()) {
+                if (shotEvent.drewFoul()) {
+                    if (shotEvent.isMade()) {
+                        shotEvent.setOutcomeType(OutcomeType.SHOT_MADE);
+                        events.add(shotEvent);
+                    }
+
+                    FoulEvent foulEvent = new FoulEvent(playerWithBall, defensivePlayer, "Non shooting foul", new TimeStamp(period, periodLengthRemaining, shotClock));
+                    foulEvent.setOutcomeType(OutcomeType.NON_SHOOTING_FOUL);
+                    events.add(foulEvent);
+
                     // Shooting foul
-                    statisticsService.recordShot(playerWithBall, shotResult);
-                    statisticsService.recordFoul(defensivePlayer, shotResult);
-                    FreeThrowResult freeThrows = shootingEngine.attemptFreeThrows(playerWithBall, shotResult.freeThrowsAwarded());
-                    statisticsService.recordFreeThrows(playerWithBall, freeThrows);
-
-                    int totalPoints = shotResult.getPoints() + freeThrows.getFreeThrowsMade();
-                    outcome = PossessionResult.OutcomeType.SHOOTING_FOUL;
-
+                    FreeThrowEvent freeThrows = shootingEngine.attemptFreeThrows(playerWithBall, shotEvent.freeThrowsAwarded(), new TimeStamp(period, periodLengthRemaining, shotClock));
                     if (freeThrows.isLastFreeThrowMissed()) {
-                        ReboundResult reboundResult = reboundingEngine.attemptRebound(offense, defense);
-                        if (reboundResult.isDefenseRebounded()) {
-                            statisticsService.recordDefensiveRebound(reboundResult.getRebounder());
-                            outcome = PossessionResult.OutcomeType.DEFENSIVE_REBOUND;
-                            return new PossessionResult(outcome, offense, defense, totalPoints, shotClock);
+                        ReboundEvent reboundEvent = reboundingEngine.attemptRebound(offense, defense, new TimeStamp(period, periodLengthRemaining, shotClock));
+                        if (reboundEvent.isDefenseRebounded()) {
+                            reboundEvent.setOutcomeType(OutcomeType.DEFENSIVE_REBOUND);
+                            events.add(reboundEvent);
+                            return events;
                         }
 
-                        else if (reboundResult.isOffenseRebounded()) {
-                            statisticsService.recordOffensiveRebound(reboundResult.getRebounder());
-                            outcome = PossessionResult.OutcomeType.OFFENSIVE_REBOUND;
-
+                        else if (reboundEvent.isOffenseRebounded()) {
                             shotClock = Math.max(Config.SHOT_CLOCK_RESET_ON_OFFENSIVE_REBOUND, shotClock);
+                            playerWithBall = reboundEvent.getRebounder();
 
-                            playerWithBall = reboundResult.getRebounder();
+                            // Reset event count
+                            this.currentEvent = 0;
+                            this.numEvents = numberOfEvents(offense);
 
-                            // Reset moment count
-                            i = 0;
-                            moments = numberOfMoments(offense);
+                            reboundEvent.setOutcomeType(OutcomeType.OFFENSIVE_REBOUND);
+                            events.add(reboundEvent);
                         }
 
                         else {
-                            outcome = PossessionResult.OutcomeType.SHOT_OUT_OF_BOUNDS;
-                            return new PossessionResult(outcome, offense, defense, totalPoints, shotClock);
+                            freeThrows.setOutcomeType(OutcomeType.TURNOVER);
+                            events.add(freeThrows);
+                            return events;
                         }
                     } else {
-                        return new PossessionResult(outcome, offense, defense, totalPoints, shotClock);
+                        freeThrows.setOutcomeType(OutcomeType.FREE_THROW_SHOT_MADE);
+                        events.add(freeThrows);
+                        return events;
                     }
                 } else {
                     // Regular shot attempt
-                    statisticsService.recordShot(playerWithBall, shotResult);
-                    if (shotResult.isMade()) {
-                        outcome = PossessionResult.OutcomeType.SHOT_MADE;
-                        return new PossessionResult(outcome, offense, defense, shotResult.getPoints(), shotClock);
+                    if (shotEvent.isMade()) {
+                        shotEvent.setOutcomeType(OutcomeType.SHOT_MADE);
+                        events.add(shotEvent);
+                        return events;
                     } else {
-                        ReboundResult reboundResult = reboundingEngine.attemptRebound(offense, defense);
-                        if (reboundResult.isDefenseRebounded()) {
-                            statisticsService.recordDefensiveRebound(reboundResult.getRebounder());
-                            outcome = PossessionResult.OutcomeType.DEFENSIVE_REBOUND;
-                            return new PossessionResult(outcome, offense, defense, shotResult.getPoints(), shotClock);
+                        shotEvent.setOutcomeType(OutcomeType.SHOT_MISSED);
+                        events.add(shotEvent);
+
+                        ReboundEvent reboundEvent = reboundingEngine.attemptRebound(offense, defense, new TimeStamp(period, periodLengthRemaining, shotClock));
+                        if (reboundEvent.isDefenseRebounded()) {
+                            reboundEvent.setOutcomeType(OutcomeType.DEFENSIVE_REBOUND);
+                            events.add(reboundEvent);
+                            return events;
                         }
 
-                        else if (reboundResult.isOffenseRebounded()) {
-                            statisticsService.recordOffensiveRebound(reboundResult.getRebounder());
-                            outcome = PossessionResult.OutcomeType.OFFENSIVE_REBOUND;
-
+                        else if (reboundEvent.isOffenseRebounded()) {
                             shotClock = Math.max(Config.SHOT_CLOCK_RESET_ON_OFFENSIVE_REBOUND, shotClock);
+                            playerWithBall = reboundEvent.getRebounder();
 
-                            playerWithBall = reboundResult.getRebounder();
+                            // Reset event count
+                            this.currentEvent = 0;
+                            this.numEvents = numberOfEvents(offense);
 
-                            // Reset moment count
-                            i = 0;
-                            moments = numberOfMoments(offense);
+                            reboundEvent.setOutcomeType(OutcomeType.OFFENSIVE_REBOUND);
+                            events.add(reboundEvent);
                         }
 
                         else {
-                            outcome = PossessionResult.OutcomeType.SHOT_OUT_OF_BOUNDS;
-                            return new PossessionResult(outcome, offense, defense, shotResult.getPoints(), shotClock);
+                            // Shot out of bounds
+                            shotEvent.setOutcomeType(OutcomeType.SHOT_OUT_OF_BOUNDS);
+                            events.add(shotEvent);
+                            return events;
                         }
                     }
                 }
+
             }
 
             // Some time passes
-            shotClock = secondsRemaining(shotClock, moments - i);
+            shotClock = secondsRemaining(shotClock, numEvents - currentEvent);
 
             if (shotClock <= 0) {
                 break;
             }
 
             // Player decides an action
-            ActionResult action = actionDecisionEngine.determineAction(playerWithBall);
-
+            ActionEvent action = actionDecisionEngine.determineAction(playerWithBall, new TimeStamp(period, periodLengthRemaining, shotClock));
             if (action.getAction().equals("Pass")) {
-                PassResult pass = passingEngine.attemptPass(playerWithBall, defense);
+                PassEvent pass = passingEngine.attemptPass(playerWithBall, defense, new TimeStamp(period, periodLengthRemaining, shotClock));
                 // Check if still retained possession
                 if (!pass.isSuccessful()) {
                     if (pass.isStolen()) {
-                        statisticsService.recordTurnover(playerWithBall);
-                        statisticsService.recordSteal(pass.getRecipient(), new StealResult(true, false, defense));
-                        outcome = PossessionResult.OutcomeType.STEAL;
-                    } else if (pass.isDeflection()) {
-                        outcome = PossessionResult.OutcomeType.PASS_DEFLECTED_OUT_OF_BOUNDS;
-                    } else if (pass.isThrownOutOfBounds()) {
-                        statisticsService.recordTurnover(playerWithBall);
-                        outcome = PossessionResult.OutcomeType.PASS_OUT_OF_BOUNDS;
-                    }
+                        // Turnover
+                        TurnoverEvent turnover = new TurnoverEvent(playerWithBall, "Bad pass", new TimeStamp(period, periodLengthRemaining, shotClock));
+                        turnover.setOutcomeType(OutcomeType.TURNOVER);
+                        events.add(turnover);
 
-                    return new PossessionResult(outcome, offense, defense, 0, shotClock);
+                        // Steal
+                        StealEvent steal = new StealEvent(true, false, defense, pass.getRecipient(), new TimeStamp(period, periodLengthRemaining, shotClock));
+                        steal.setOutcomeType(OutcomeType.STEAL);
+                        events.add(steal);
+                        return events;
+                    } else if (pass.isDeflection()) {
+                        pass.setOutcomeType(OutcomeType.PASS_DEFLECTED_OUT_OF_BOUNDS);
+                        events.add(pass);
+                        // nothing
+                    } else if (pass.isThrownOutOfBounds()) {
+                        // Turnover
+                        TurnoverEvent turnover = new TurnoverEvent(pass.getPasser(), "Thrown out of bounds", new TimeStamp(period, periodLengthRemaining, shotClock));
+                        turnover.setOutcomeType(OutcomeType.TURNOVER);
+                        events.add(turnover);
+                        return events;
+                    }
+                } else {
+                    pass.setOutcomeType(OutcomeType.SUCCESSFUL_PASS);
+                    events.add(pass);
                 }
 
                 playerWithBall = pass.getRecipient();
@@ -189,76 +220,87 @@ public class PossessionEngine {
                 Player defensivePlayer = selectRandomPlayer(defense);
 
                 // Attempts a shot
-                ShotResult shotResult = shootingEngine.attemptShot(playerWithBall, defensivePlayer);
+                ShotEvent shotEvent = shootingEngine.attemptShot(playerWithBall, defensivePlayer, new TimeStamp(period, periodLengthRemaining, shotClock));
 
-                if (shotResult.drewFoul()) {
+                if (shotEvent.drewFoul()) {
+                    if (shotEvent.isMade()) {
+                        shotEvent.setOutcomeType(OutcomeType.SHOT_MADE);
+                        events.add(shotEvent);
+                    }
+
+                    // Add foul to list of events
+                    FoulEvent foulEvent = new FoulEvent(playerWithBall, defensivePlayer, "Shooting foul", new TimeStamp(period, periodLengthRemaining, shotClock));
+                    foulEvent.setOutcomeType(OutcomeType.SHOOTING_FOUL);
+                    events.add(foulEvent);
+
                     // Shooting foul
-                    statisticsService.recordShot(playerWithBall, shotResult);
-                    statisticsService.recordFoul(defensivePlayer, shotResult);
-                    FreeThrowResult freeThrows = shootingEngine.attemptFreeThrows(playerWithBall, shotResult.freeThrowsAwarded());
-                    statisticsService.recordFreeThrows(playerWithBall, freeThrows);
-
-                    int totalPoints = shotResult.getPoints() + freeThrows.getFreeThrowsMade();
-                    outcome = PossessionResult.OutcomeType.SHOOTING_FOUL;
+                    FreeThrowEvent freeThrows = shootingEngine.attemptFreeThrows(playerWithBall, shotEvent.freeThrowsAwarded(), new TimeStamp(period, periodLengthRemaining, shotClock));
 
                     if (freeThrows.isLastFreeThrowMissed()) {
-                        ReboundResult reboundResult = reboundingEngine.attemptRebound(offense, defense);
-                        if (reboundResult.isDefenseRebounded()) {
-                            statisticsService.recordDefensiveRebound(reboundResult.getRebounder());
-                            outcome = PossessionResult.OutcomeType.DEFENSIVE_REBOUND;
-                            return new PossessionResult(outcome, offense, defense, totalPoints, shotClock);
+                        ReboundEvent reboundEvent = reboundingEngine.attemptRebound(offense, defense, new TimeStamp(period, periodLengthRemaining, shotClock));
+                        if (reboundEvent.isDefenseRebounded()) {
+                            reboundEvent.setOutcomeType(OutcomeType.DEFENSIVE_REBOUND);
+                            events.add(reboundEvent);
+                            return events;
                         }
 
-                        else if (reboundResult.isOffenseRebounded()) {
-                            statisticsService.recordOffensiveRebound(reboundResult.getRebounder());
-                            outcome = PossessionResult.OutcomeType.OFFENSIVE_REBOUND;
-
+                        else if (reboundEvent.isOffenseRebounded()) {
                             shotClock = Math.max(Config.SHOT_CLOCK_RESET_ON_OFFENSIVE_REBOUND, shotClock);
+                            playerWithBall = reboundEvent.getRebounder();
 
-                            playerWithBall = reboundResult.getRebounder();
+                            // Reset event count
+                            this.currentEvent = 0;
+                            this.numEvents = numberOfEvents(offense);
 
-                            // Reset moment count
-                            i = 0;
-                            moments = numberOfMoments(offense);
+                            reboundEvent.setOutcomeType(OutcomeType.OFFENSIVE_REBOUND);
+                            events.add(reboundEvent);
                         }
 
                         else {
-                            outcome = PossessionResult.OutcomeType.SHOT_OUT_OF_BOUNDS;
-                            return new PossessionResult(outcome, offense, defense, totalPoints, shotClock);
+                            // Shot out of bounds
+                            freeThrows.setOutcomeType(OutcomeType.TURNOVER);
+                            events.add(freeThrows);
+                            return events;
                         }
                     } else {
-                        return new PossessionResult(outcome, offense, defense, totalPoints, shotClock);
+                        freeThrows.setOutcomeType(OutcomeType.FREE_THROW_SHOT_MADE);
+                        events.add(freeThrows);
+                        return events;
                     }
                 } else {
                     // Regular shot attempt
-                    statisticsService.recordShot(playerWithBall, shotResult);
-                    if (shotResult.isMade()) {
-                        outcome = PossessionResult.OutcomeType.SHOT_MADE;
-                        return new PossessionResult(outcome, offense, defense, shotResult.getPoints(), shotClock);
+                    if (shotEvent.isMade()) {
+                        shotEvent.setOutcomeType(OutcomeType.SHOT_MADE);
+                        events.add(shotEvent);
+                        return events;
                     } else {
-                        ReboundResult reboundResult = reboundingEngine.attemptRebound(offense, defense);
-                        if (reboundResult.isDefenseRebounded()) {
-                            statisticsService.recordDefensiveRebound(reboundResult.getRebounder());
-                            outcome = PossessionResult.OutcomeType.DEFENSIVE_REBOUND;
-                            return new PossessionResult(outcome, offense, defense, shotResult.getPoints(), shotClock);
+                        shotEvent.setOutcomeType(OutcomeType.SHOT_MISSED);
+                        events.add(shotEvent);
+
+                        ReboundEvent reboundEvent = reboundingEngine.attemptRebound(offense, defense, new TimeStamp(period, periodLengthRemaining, shotClock));
+                        if (reboundEvent.isDefenseRebounded()) {
+                            reboundEvent.setOutcomeType(OutcomeType.DEFENSIVE_REBOUND);
+                            events.add(reboundEvent);
+                            return events;
                         }
 
-                        else if (reboundResult.isOffenseRebounded()) {
-                            statisticsService.recordOffensiveRebound(reboundResult.getRebounder());
-                            outcome = PossessionResult.OutcomeType.OFFENSIVE_REBOUND;
-
+                        else if (reboundEvent.isOffenseRebounded()) {
                             shotClock = Math.max(Config.SHOT_CLOCK_RESET_ON_OFFENSIVE_REBOUND, shotClock);
+                            playerWithBall = reboundEvent.getRebounder();
 
-                            playerWithBall = reboundResult.getRebounder();
+                            // Reset event count
+                            this.currentEvent = 0;
+                            this.numEvents = numberOfEvents(offense);
 
-                            // Reset moment count
-                            i = 0;
-                            moments = numberOfMoments(offense);
+                            reboundEvent.setOutcomeType(OutcomeType.OFFENSIVE_REBOUND);
+                            events.add(reboundEvent);
                         }
 
                         else {
-                            outcome = PossessionResult.OutcomeType.SHOT_OUT_OF_BOUNDS;
-                            return new PossessionResult(outcome, offense, defense, shotResult.getPoints(), shotClock);
+                            // Shot out of bounds
+                            shotEvent.setOutcomeType(OutcomeType.SHOT_OUT_OF_BOUNDS);
+                            events.add(shotEvent);
+                            return events;
                         }
                     }
                 }
@@ -268,29 +310,45 @@ public class PossessionEngine {
                 Player defensivePlayer = selectRandomPlayer(defense);
 
                 // Check for steal attempt
-                StealResult stealResult = stealEngine.attemptSteal(defensivePlayer, playerWithBall);
+                StealEvent stealEvent = stealEngine.attemptSteal(defensivePlayer, playerWithBall, new TimeStamp(period, periodLengthRemaining, shotClock));
 
-                if (stealResult.stolen()) {
-                    statisticsService.recordSteal(defensivePlayer, stealResult);
-                    statisticsService.recordTurnover(playerWithBall);
-                    return new PossessionResult(PossessionResult.OutcomeType.STEAL, offense, defense, 0, shotClock);
+                if (stealEvent.stolen()) {
+                    stealEvent.setOutcomeType(OutcomeType.STEAL);
+                    events.add(stealEvent);
+                    return events;
                 }
 
-                if (stealResult.hasFoul()) {
-                    statisticsService.recordFoul(defensivePlayer, stealResult);
-                    return new PossessionResult(PossessionResult.OutcomeType.NON_SHOOTING_FOUL, offense, defense, 0, shotClock);
+                if (stealEvent.hasFoul()) {
+                    // Nothing
+                    stealEvent.setOutcomeType(OutcomeType.NON_SHOOTING_FOUL);
+                    events.add(stealEvent);
+
+                    FoulEvent foulEvent = new FoulEvent(playerWithBall, defensivePlayer, "Non shooting foul", new TimeStamp(period, periodLengthRemaining, shotClock));
+                    foulEvent.setOutcomeType(OutcomeType.NON_SHOOTING_FOUL);
+                    events.add(foulEvent);
+
+                    shotClock = Math.max(Config.SHOT_CLOCK_RESET_ON_FOUL, shotClock);
+
+                    // Reset event count
+                    this.currentEvent = 0;
+                    this.numEvents = numberOfEvents(offense);
                 }
             }
         }
 
-        return new PossessionResult(outcome, offense, defense, 0, Config.NUM_SECONDS_POSSESSION);
+        // this should only be reached upon a shotclock violation because every other event should lead to a natural return statement
+        TurnoverEvent shotClockViolation = new TurnoverEvent(playerWithBall, "Shot clock violation", new TimeStamp(period, periodLengthRemaining, shotClock));
+        shotClockViolation.setOutcomeType(OutcomeType.SHOT_CLOCK_VIOLATION);
+        events.add(shotClockViolation);
+
+        return events;
     }
 
     public Player selectInBounder(Team offensiveTeam) {
         return selectRandomPlayer(offensiveTeam);
     }
 
-    public int numberOfMoments(Team offensiveTeam) { // this should eventually be moved to a lineup class where each new active lineup is re-calculated for its "activeness"
+    public int numberOfEvents(Team offensiveTeam) { // this should eventually be moved to a lineup class where each new active lineup is re-calculated for its "activeness"
         return r.nextInt(1, 8);
 
 //        double tendenciesSum = 0;
@@ -305,12 +363,12 @@ public class PossessionEngine {
 //        return (int) (activeness * Config.BASE_MOMENTS_PER_POSSESSION);
     }
 
-    public double secondsRemaining(double shotClock, int numberOfMomentsLeft) {
-        if (numberOfMomentsLeft <= 0) {
+    public double secondsRemaining(double shotClock, int numberOfEventsLeft) {
+        if (numberOfEventsLeft <= 0) {
             return 0;
         }
 
-        double averageMomentLengthPossible = shotClock / numberOfMomentsLeft;
+        double averageMomentLengthPossible = shotClock / numberOfEventsLeft;
         double timeUsed = BoundedNormalDistribution.generateBoundedNormalDoubleInt(
                 averageMomentLengthPossible,
                 Config.BASE_MOMENT_LENGTH_STDDEV,
@@ -319,6 +377,38 @@ public class PossessionEngine {
         );
 
         return shotClock - timeUsed;
+    }
+
+    public boolean doesPossessionChange(OutcomeType outcome) {
+        if (outcome == null) {
+            throw new IllegalStateException("OutcomeType was null — possession resolution incomplete");
+        }
+
+        switch (outcome) {
+            // Outcome types which result in possession changes
+            case STEAL:
+            case SHOT_MADE:
+            case FREE_THROW_SHOT_MADE:
+            case DEFENSIVE_REBOUND:
+            case TURNOVER:
+            case SHOT_OUT_OF_BOUNDS:
+            case PASS_OUT_OF_BOUNDS:
+            case SHOT_CLOCK_VIOLATION:
+                return true;
+            // Outcome type which do not result in possession changes
+            case NON_SHOOTING_FOUL:
+            case SHOOTING_FOUL:
+            case OFFENSIVE_REBOUND:
+            case PASS_DEFLECTED_OUT_OF_BOUNDS:
+            case SUCCESSFUL_PASS:
+                return false;
+            default:
+                return true;
+        }
+    }
+
+    public double calculatePossessionLength(ArrayList<GameEvent> eventsList) {
+        return Config.NUM_SECONDS_POSSESSION - eventsList.getLast().getTimeStamp().getShotClock();
     }
 
     public Player selectRandomPlayer(Team team) {

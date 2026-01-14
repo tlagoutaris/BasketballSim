@@ -3,9 +3,10 @@ package simulation;
 import config.Config;
 import model.Player;
 import model.Team;
-import result.PassResult;
+import result.PassEvent;
 import java.security.SecureRandom;
 import java.util.Arrays;
+import result.TimeStamp;
 
 public class PassingEngine {
 
@@ -16,7 +17,7 @@ public class PassingEngine {
         this.r = r;
     }
 
-    public PassResult attemptPass(Player passer, Team opposingTeam) {
+    public PassEvent attemptPass(Player passer, Team opposingTeam, TimeStamp timeStamp) {
         boolean successful;
         boolean stolen;
         boolean turnover;
@@ -56,7 +57,7 @@ public class PassingEngine {
             turnover = false;
         }
 
-        return new PassResult(successful, stolen, turnover, passer, recipient);
+        return new PassEvent(successful, stolen, turnover, passer, recipient, timeStamp);
     }
 
     public Player determineIntendedRecipient(Team team, Player playerCurrentlyWithBall) {
