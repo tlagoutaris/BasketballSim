@@ -14,7 +14,7 @@ public class Main {
         Team t2 = new Team("Brooklyn", "Nets");
 
         Game g = new Game(t1, t2);
-        for (int i = 0; i < 1_000; i++) {
+        for (int i = 0; i < 10_000; i++) {
             g.initializeGame();
             g.simulateGame();
             g.printScore();
@@ -22,6 +22,8 @@ public class Main {
         }
 
         t1.getStatistics().printAverages();
+        t1.printRoster();
         t2.getStatistics().printAverages();
+        t2.printRoster();
     }
 }

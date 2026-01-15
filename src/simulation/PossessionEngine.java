@@ -58,18 +58,22 @@ public class PossessionEngine {
         this.numEvents = numberOfEvents(offense);
 
         // inbound the ball
-        Player inbounder = selectRandomPlayer(offense);
+        Player inbounder = selectInBounder(offense);
 
         PassEvent inboundPass = passingEngine.attemptPass(inbounder, defense, new TimeStamp(period, periodLengthRemaining, shotClock));
         // Check if still retained possession
         if (!inboundPass.isSuccessful()) {
             if (inboundPass.isStolen()) {
+                inboundPass.setOutcomeType(OutcomeType.TURNOVER);
+                events.add(inboundPass);
+
                 StealEvent steal = new StealEvent(true, false, defense, inboundPass.getRecipient(), new TimeStamp(period, periodLengthRemaining, shotClock));
                 steal.setOutcomeType(OutcomeType.STEAL);
                 events.add(steal);
                 return events;
             } else if (inboundPass.isDeflection()) {
                 inboundPass.setOutcomeType(OutcomeType.PASS_DEFLECTED_OUT_OF_BOUNDS);
+                events.add(inboundPass);
                 // it should not technically be a possession change, but it should be inbounded again
             } else if (inboundPass.isThrownOutOfBounds()) {
                 inboundPass.setOutcomeType(OutcomeType.PASS_OUT_OF_BOUNDS);
@@ -165,7 +169,6 @@ public class PossessionEngine {
                         else {
                             // Shot out of bounds
                             shotEvent.setOutcomeType(OutcomeType.SHOT_OUT_OF_BOUNDS);
-                            events.add(shotEvent);
                             return events;
                         }
                     }
@@ -187,21 +190,27 @@ public class PossessionEngine {
                 // Check if still retained possession
                 if (!pass.isSuccessful()) {
                     if (pass.isStolen()) {
-                        // Turnover
-                        TurnoverEvent turnover = new TurnoverEvent(playerWithBall, "Bad pass", new TimeStamp(period, periodLengthRemaining, shotClock));
-                        turnover.setOutcomeType(OutcomeType.TURNOVER);
-                        events.add(turnover);
+                        pass.setOutcomeType(OutcomeType.TURNOVER);
+                        events.add(pass);
 
                         // Steal
                         StealEvent steal = new StealEvent(true, false, defense, pass.getRecipient(), new TimeStamp(period, periodLengthRemaining, shotClock));
                         steal.setOutcomeType(OutcomeType.STEAL);
                         events.add(steal);
+
+                        // Turnover
+                        TurnoverEvent turnover = new TurnoverEvent(playerWithBall, "Bad pass", new TimeStamp(period, periodLengthRemaining, shotClock));
+                        turnover.setOutcomeType(OutcomeType.TURNOVER);
+                        events.add(turnover);
+
                         return events;
                     } else if (pass.isDeflection()) {
                         pass.setOutcomeType(OutcomeType.PASS_DEFLECTED_OUT_OF_BOUNDS);
                         events.add(pass);
-                        // nothing
                     } else if (pass.isThrownOutOfBounds()) {
+                        pass.setOutcomeType(OutcomeType.TURNOVER);
+                        events.add(pass);
+
                         // Turnover
                         TurnoverEvent turnover = new TurnoverEvent(pass.getPasser(), "Thrown out of bounds", new TimeStamp(period, periodLengthRemaining, shotClock));
                         turnover.setOutcomeType(OutcomeType.TURNOVER);
@@ -299,7 +308,6 @@ public class PossessionEngine {
                         else {
                             // Shot out of bounds
                             shotEvent.setOutcomeType(OutcomeType.SHOT_OUT_OF_BOUNDS);
-                            events.add(shotEvent);
                             return events;
                         }
                     }
@@ -368,9 +376,9 @@ public class PossessionEngine {
             return 0;
         }
 
-        double averageMomentLengthPossible = shotClock / numberOfEventsLeft;
+        // double averageMomentLengthPossible = shotClock / numberOfEventsLeft; // this is supposed to create a sort of speeding up of play as getting closer to the shotclock
         double timeUsed = BoundedNormalDistribution.generateBoundedNormalDoubleInt(
-                averageMomentLengthPossible,
+                Config.BASE_MOMENT_LENGTH_MEAN,
                 Config.BASE_MOMENT_LENGTH_STDDEV,
                 Config.BASE_TIME_NEEDED_TO_SHOOT,
                 shotClock

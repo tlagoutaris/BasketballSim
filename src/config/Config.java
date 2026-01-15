@@ -26,13 +26,13 @@ public class Config {
     public static final double BASE_AVERAGE_POSSESSIONS_PER_TEAM = 104;
     public static final double BASE_TIME_NEEDED_TO_SHOOT = 0.4;
     public static final double BASE_POSSESSION_ABORTING_SHOT = 2.0;
-    public static final double BASE_MOMENTS_PER_POSSESSION = (BASE_AVERAGE_PASSES_PER_TEAM + BASE_AVERAGE_SHOTS_PER_TEAM/ BASE_AVERAGE_POSSESSIONS_PER_TEAM);
+    public static final double BASE_MOMENTS_PER_POSSESSION = (BASE_AVERAGE_PASSES_PER_TEAM + BASE_AVERAGE_SHOTS_PER_TEAM / BASE_AVERAGE_POSSESSIONS_PER_TEAM);
 
     // Simulation tendencies
     public static final double BASE_TWO_POINT_ATTEMPT_TENDENCY = 60;
     public static final double BASE_THREE_POINT_ATTEMPT_TENDENCY = 100 - BASE_TWO_POINT_ATTEMPT_TENDENCY;
     public static final double BASE_PASS_ATTEMPT_TENDENCY = (BASE_AVERAGE_PASSES_PER_TEAM / BASE_AVERAGE_POSSESSIONS_PER_TEAM) * 10;
-    public static final double BASE_SHOT_ATTEMPT_TENDENCY = (BASE_PASS_ATTEMPT_TENDENCY / 2);
+    public static final double BASE_SHOT_ATTEMPT_TENDENCY = (BASE_PASS_ATTEMPT_TENDENCY / 3);
     public static final double BASE_DRIBBLE_TENDENCY = BASE_SHOT_ATTEMPT_TENDENCY;
     public static final double BASE_STEAL_ATTEMPT_TENDENCY = 18;
     public static final double BASE_INTERCEPTION_TENDENCY = 4;
@@ -45,7 +45,8 @@ public class Config {
     public static final double BASE_ATTRIBUTE_MEAN = 50;
     public static final double BASE_ATTRIBUTE_STDDEV = 16;
     public static final double BASE_TENDENCY_STDDEV = 10;
-    public static final double BASE_MOMENT_LENGTH_STDDEV = 3;
+    public static final double BASE_MOMENT_LENGTH_MEAN = 5;
+    public static final double BASE_MOMENT_LENGTH_STDDEV = 2;
 
     // Normal distribution parameters
     public static final double LOWER_BOUND = 0.0;
