@@ -67,7 +67,7 @@ public class PossessionEngine {
                 inboundPass.setOutcomeType(OutcomeType.TURNOVER);
                 events.add(inboundPass);
 
-                StealEvent steal = new StealEvent(true, false, defense, inboundPass.getRecipient(), new TimeStamp(period, periodLengthRemaining, shotClock));
+                StealEvent steal = new StealEvent(true, false, defense, inbounder, inboundPass.getRecipient(), new TimeStamp(period, periodLengthRemaining, shotClock));
                 steal.setOutcomeType(OutcomeType.STEAL);
                 events.add(steal);
                 return events;
@@ -194,7 +194,7 @@ public class PossessionEngine {
                         events.add(pass);
 
                         // Steal
-                        StealEvent steal = new StealEvent(true, false, defense, pass.getRecipient(), new TimeStamp(period, periodLengthRemaining, shotClock));
+                        StealEvent steal = new StealEvent(true, false, defense, pass.getPasser(), pass.getRecipient(), new TimeStamp(period, periodLengthRemaining, shotClock));
                         steal.setOutcomeType(OutcomeType.STEAL);
                         events.add(steal);
 

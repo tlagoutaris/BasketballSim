@@ -40,6 +40,6 @@ public class StealEngine {
 
         }
 
-        return new StealEvent(stolen, foul, defender.getCurrentTeam(), defender, timeStamp);
+        return new StealEvent(stolen, foul, defender.getCurrentTeam(), playerWithBall, defender, timeStamp);
     }
 }

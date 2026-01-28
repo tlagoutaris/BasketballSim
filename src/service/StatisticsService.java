@@ -2,6 +2,7 @@ package service;
 
 import model.Player;
 import model.BoxScore;
+import service.GameLogUpdater;
 import result.*;
 
 import java.util.ArrayList;
@@ -14,7 +15,9 @@ public class StatisticsService {
 
     public void handle(ArrayList<GameEvent> events, BoxScore boxScore) {
         for (GameEvent event : events) {
+
             event.getTimeStamp().printTime();
+
             if (event instanceof ShotEvent shot) {
                 if (!shot.isMade()) {
                     System.out.println("Shot missed event!");

@@ -1,5 +1,6 @@
 package model;
 
+import service.GameLogUpdater;
 import service.StatisticsService;
 import simulation.PossessionEngine;
 import config.Config;
@@ -10,6 +11,7 @@ import java.util.ArrayList;
 public class Game {
     SecureRandom r;
     PossessionEngine possessionEngine = new PossessionEngine();
+    GameLogUpdater logUpdater = new GameLogUpdater();
     StatisticsService statistics = new StatisticsService();
 
     // model.Game state
@@ -18,6 +20,7 @@ public class Game {
     Team currentOffense;
     Team currentDefense;
     BoxScore boxScore = new BoxScore(homeTeam, awayTeam);
+    GameLog log = new GameLog(logUpdater);
     int overtimes;
     int currentPeriod;
     boolean inOvertime;
